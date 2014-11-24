@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{96081B63-3B59-4F0F-9754-77042768B7C2}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <AssemblyName>MidiPlugin</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <WarningLevel>4</WarningLevel>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="LumosGUI">
+      <HintPath>..\..\..\..\Program Files (x86)\DMXControl3.0\GUI\LumosGUI.exe</HintPath>
+    </Reference>
+    <Reference Include="LumosLIB">
+      <HintPath>..\..\..\..\Program Files (x86)\DMXControl3.0\GUI\LumosLIB.dll</HintPath>
+    </Reference>
+    <Reference Include="NAudio">
+      <HintPath>..\..\..\..\Program Files (x86)\DMXControl3.0\GUI\NAudio.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="WeifenLuo.WinFormsUI.Docking">
+      <HintPath>..\..\..\..\Program Files (x86)\DMXControl3.0\GUI\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="MidiPlugin\AssemblyHelper.cs" />
+    <Compile Include="MidiPlugin\ButtonInputChannel.cs" />
+    <Compile Include="MidiPlugin\ButtonRule.cs" />
+    <Compile Include="MidiPlugin\ContextManager.cs" />
+    <Compile Include="MidiPlugin\DeviceId.cs" />
+    <Compile Include="MidiPlugin\DeviceInformation.cs" />
+    <Compile Include="MidiPlugin\DeviceRule.cs" />
+    <Compile Include="MidiPlugin\EDeviceType.cs" />
+    <Compile Include="MidiPlugin\EncoderRule.cs" />
+    <Compile Include="MidiPlugin\IBacktrack.cs" />
+    <Compile Include="MidiPlugin\ILearnable.cs" />
+    <Compile Include="MidiPlugin\IProcessable.cs" />
+    <Compile Include="MidiPlugin\ISave.cs" />
+    <Compile Include="MidiPlugin\MidiDev.cs" />
+    <Compile Include="MidiPlugin\MidiEventArgs.cs" />
+    <Compile Include="MidiPlugin\MidiForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MidiPlugin\MidiInformation.cs" />
+    <Compile Include="MidiPlugin\MidiInput.cs" />
+    <Compile Include="MidiPlugin\MidiInputChannel.cs" />
+    <Compile Include="MidiPlugin\MidiInputLayer.cs" />
+    <Compile Include="MidiPlugin\MidiMessage.cs" />
+    <Compile Include="MidiPlugin\MidiOutput.cs" />
+    <Compile Include="MidiPlugin\MidiPlugin.cs" />
+    <Compile Include="MidiPlugin\MidiRangeInputChannel.cs" />
+    <Compile Include="MidiPlugin\RuleSet.cs" />
+    <Compile Include="MidiPlugin\RuleSetEditForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MidiPlugin\SliderRule.cs" />
+    <Compile Include="MidiPlugin\ToolStripDeviceRuleButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MidiPlugin\Utilities\CLRInjector.cs" />
+    <Compile Include="MidiPlugin\Utilities\ExecutorHelper.cs" />
+    <Compile Include="MidiPlugin\Utilities\ExecutorWindowHelper.cs" />
+    <Compile Include="MidiPlugin\Utilities\Extensions.cs" />
+    <Compile Include="MidiPlugin\Utilities\InputLayerManagementHelper.cs" />
+    <Compile Include="MidiPlugin\Utilities\LinkChangedHandler.cs" />
+    <Compile Include="MidiPlugin\ValueChangedEventArgs.cs" />
+    <Compile Include="MidiPlugin\ValueTypeTypeConverter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="MidiPlugin\MidiForm.resx">
+      <DependentUpon>MidiForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MidiPlugin\RuleSetEditForm.resx">
+      <DependentUpon>RuleSetEditForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(TargetFileName)" "C:\Program Files (x86)\DMXControl3.0\GUI\Plugins"</PostBuildEvent>
+  </PropertyGroup>
+</Project>
