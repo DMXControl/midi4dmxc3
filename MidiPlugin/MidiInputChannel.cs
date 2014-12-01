@@ -4,7 +4,7 @@ namespace MidiPlugin
 {
 	public abstract class MidiInputChannel : AbstractInputChannel
 	{
-		private DeviceRule rule;
+		protected DeviceRule rule;
 		public MidiInputChannel(IInputLayer parent, DeviceRule rule, bool registerValueChange = true, bool registerFB = true) : base(rule.GUID, parent)
 		{
             base.AutofireChangedEvent = true;
@@ -22,7 +22,7 @@ namespace MidiPlugin
             this.Changed += HandleChanged;
 		}
 
-        private void HandleChanged(IInputChannel sender, object newValue)
+        protected virtual void HandleChanged(IInputChannel sender, object newValue)
         {
             if(newValue is double)
             {

@@ -37,7 +37,8 @@
     <Reference Include="LumosLIB">
       <HintPath>..\..\..\..\Program Files (x86)\DMXControl3.0\GUI\LumosLIB.dll</HintPath>
     </Reference>
-    <Reference Include="NAudio">
+    <Reference Include="NAudio, Version=1.7.0.15, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Program Files (x86)\DMXControl3.0\GUI\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="System" />

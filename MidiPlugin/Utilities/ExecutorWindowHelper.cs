@@ -207,8 +207,6 @@ namespace MidiPlugin.Utilities
             }
             else
                 CurrentExecutorPage = null;
-            //TODO
-            /* Reassign executors and update backtrack values */
             if (CurrentExecutorPage == null)
                 Clear();
             else
