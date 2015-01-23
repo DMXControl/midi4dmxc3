@@ -18,6 +18,7 @@ namespace MidiPlugin.Utilities
         
         public class DynamicExecutor
         {
+            public double Tolerance { get; set; }
             public string GUID { get; set; }
 
             private IExecutorFacade assignedExecutorInternal;
@@ -95,7 +96,12 @@ namespace MidiPlugin.Utilities
                 else if(c.ChannelType == EInputChannelType.RANGE)
                 {
                     if(metadataID == "Fader")
-                        return (id, newValue) => {if(assignedExecutor != null) {assignedExecutor.FaderValue = (double)newValue; return true; } return false;};
+                        return (id, newValue) => {if(assignedExecutor != null) 
+                        {
+                            if (Tolerance <= 0 || Math.Abs((double)assignedExecutor.FaderValue - (double)newValue) < Tolerance) //toleranz ggf. abschaltbar machen pro dynamic
+                            assignedExecutor.FaderValue = (double)newValue; 
+                            return true; 
+                        } return false;};
                 }
 
                 return null;
@@ -312,6 +318,30 @@ namespace MidiPlugin.Utilities
             var executor = mtd.Parent;
             var guid = executor.ID.MetadataID;
             return dynExecutors.FirstOrDefault(j => j.GUID == guid);
+        }
+
+        internal void LoadExecutor(org.dmxc.lumos.Kernel.Resource.ManagedTreeItem exc)
+        {
+            foreach (var item in exc.GetChildren("ExecutorCfg"))
+            {
+                var id = item.getValue<string>("ID");
+                var _exc = dynExecutors.FirstOrDefault(j => j.GUID == id);
+                if (_exc == null) return;
+                _exc.Tolerance = item.getValue<double>("Tolerance");    
+            }
+        }
+
+        internal org.dmxc.lumos.Kernel.Resource.ManagedTreeItem SaveExecutors()
+        {
+            org.dmxc.lumos.Kernel.Resource.ManagedTreeItem item = new org.dmxc.lumos.Kernel.Resource.ManagedTreeItem("Executors");
+            foreach (var item2 in dynExecutors)
+            {
+                var child = new org.dmxc.lumos.Kernel.Resource.ManagedTreeItem("ExecutorCfg");
+                child.setValue("ID", item2.GUID);
+                child.setValue("Tolerance", item2.Tolerance);
+                item.AddChild(child);
+            }
+            return item;
         }
     }
 }

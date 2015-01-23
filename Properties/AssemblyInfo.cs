@@ -7,7 +7,7 @@ using System.Resources;
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die mit einer Assembly verknüpft sind.
 [assembly: AssemblyTitle("MidiPlugin for DMX3")]
-[assembly: AssemblyDescription("Midi Plugin für DMXControl 3.0Beta6")]
+[assembly: AssemblyDescription("Midi Plugin für DMXControl 3.0")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("MidiPlugin")]
@@ -30,6 +30,6 @@ using System.Resources;
 //      Buildnummer
 //      Revision
 //
-[assembly: AssemblyVersion("0.4.0.0")]
-[assembly: AssemblyFileVersion("0.4.0.0")]
+[assembly: AssemblyVersion("0.4.1.0")]
+[assembly: AssemblyFileVersion("0.4.1.0")]
 [assembly: NeutralResourcesLanguageAttribute("")]

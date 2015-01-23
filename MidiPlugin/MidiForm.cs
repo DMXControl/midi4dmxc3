@@ -183,7 +183,7 @@ namespace MidiPlugin
             // 
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exportRuleSetsToolStripMenuItem,
-            this.importRuleSetsToolStripMenuItem,});
+            this.importRuleSetsToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             this.toolsToolStripMenuItem.Text = "Tools";
@@ -191,14 +191,14 @@ namespace MidiPlugin
             // exportRuleSetsToolStripMenuItem
             // 
             this.exportRuleSetsToolStripMenuItem.Name = "exportRuleSetsToolStripMenuItem";
-            this.exportRuleSetsToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.exportRuleSetsToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.exportRuleSetsToolStripMenuItem.Text = "Export RuleSets";
             this.exportRuleSetsToolStripMenuItem.Click += new System.EventHandler(this.exportRuleSetsToolStripMenuItem_Click);
             // 
             // importRuleSetsToolStripMenuItem
             // 
             this.importRuleSetsToolStripMenuItem.Name = "importRuleSetsToolStripMenuItem";
-            this.importRuleSetsToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.importRuleSetsToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.importRuleSetsToolStripMenuItem.Text = "Import RuleSets";
             this.importRuleSetsToolStripMenuItem.Click += new System.EventHandler(this.importRuleSetsToolStripMenuItem_Click);
             // 
@@ -307,5 +307,6 @@ namespace MidiPlugin
         {
             if (Import != null) Import(null, null);
         }
+
 	}
 }

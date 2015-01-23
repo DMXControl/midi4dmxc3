@@ -23,6 +23,7 @@ namespace MidiPlugin
         public Type interfacedILMType;
 		internal static readonly ILumosLog log = LumosLogger.getInstance(typeof(MidiPlugin));
 		private static readonly LumosResourceMetadata myMetaData = new LumosResourceMetadata("MidiSettings.xml", ELumosResourceType.MANAGED_TREE);
+        private static readonly LumosResourceMetadata metadata2 = new LumosResourceMetadata("MidiPlugin.Config.xml", ELumosResourceType.MANAGED_TREE);
 		private MidiForm form;
 		private DeviceInformation devices;
 		private MidiInformation midi;
@@ -40,7 +41,17 @@ namespace MidiPlugin
             this.lch = new Utilities.LinkChangedHandler(this.midi);
             ConnectionManager.getInstance().registerMessageListener(this, "KernelInputLayerManager", "LinkChanged");
             ConnectionManager.getInstance().registerMessageListener(this, "ExecutorManager", "OnExecutorChanged");
-		}
+            try
+            {
+                var res = ResourceManager.getInstance().loadResource(EResourceAccess.READ_WRITE, EResourceType.CONFIG, metadata2);
+                var data = res.ManagedData;
+                ewHelper.LoadExecutor(data);
+            }
+            catch
+            {
+                log.Info("No configuration found.");
+            }
+        }
 		protected override void startupPlugin()
 		{
             log.Debug("Startup MidiPlugin!");
@@ -96,6 +107,7 @@ namespace MidiPlugin
 		{
             log.Debug("SaveProject in MidiPlugin");
 			base.saveProject(context);
+            ResourceManager.getInstance().saveResource(EResourceType.CONFIG, new LumosResource("MPlugin", ewHelper.SaveExecutors()));
 			this.Save();
 		}
 		public override void loadProject(LumosGUIIOContext context)
