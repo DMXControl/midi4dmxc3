@@ -10,6 +10,8 @@ using Lumos.GUI.Input;
 using Lumos.GUI.Windows.ExecutorPanel;
 using org.dmxc.lumos.Kernel.Input;
 using Lumos.GUI.Facade;
+using Lumos.GUI.Settings;
+using org.dmxc.lumos.Kernel.Settings;
 
 namespace MidiPlugin.Utilities
 {
@@ -139,7 +141,7 @@ namespace MidiPlugin.Utilities
                                           "{037D0678-A050-478F-8667-9586F56BF8C5}",
                                       };
 
-        static DynamicExecutor[] dynExecutors = executorIds.Select(j => new DynamicExecutor { GUID = j }).ToArray();
+        static DynamicExecutor[] dynExecutors = executorIds.Select(j => new DynamicExecutor { GUID = j, Tolerance = 0.07 }).ToArray();
         
         public const string ExecutorWindow_PGUp = "{6ABAAF63-E751-4A8C-BF8F-4C0CFE52DFAC}";
         public const string ExecutorWindow_PGDn = "{668FBFEC-266E-4F7D-BD3B-ABD2562F31F8}";
@@ -230,6 +232,9 @@ namespace MidiPlugin.Utilities
             {
                 item.Clear();
             }
+
+            var settings = SettingsManager.getInstance();
+            settings.GUISettingChanged -= HandleSettingChanged;
         }
 
 
@@ -343,5 +348,30 @@ namespace MidiPlugin.Utilities
             }
             return item;
         }
+
+        internal void RegisterSettings()
+        
+        {
+            var settings = SettingsManager.getInstance();
+            for (int i = 0; i < dynExecutors.Length;i++ )
+            {
+                settings.registerGuiSetting(new SettingsMetadata(ESettingsRegisterType.APPLICATION, "Executor", null, "Dynamic Executor " + (i+1)+": Tolerance", "MPL.EXECFG" + i, "", null)
+    {
+        MinDouble = -1,
+        MaxDouble = 1
+    }, dynExecutors[i].Tolerance);
+            }
+            settings.GUISettingChanged += HandleSettingChanged;
+        }
+
+        private void HandleSettingChanged(object sender, SettingChangedEventArgs args)
+        {
+            MidiPlugin.log.Info("SettingChanged: {0}, NewValue: {1}, Type:{2}", args.PropertyName, args.NewValue, args.Type);
+            for(int i = 0; i < dynExecutors.Length; i++)
+            {
+                dynExecutors[i].Tolerance = SettingsManager.getInstance().getGuiSetting<double>("MPL.EXECFG" + i);
+            }
+        }
+
     }
 }

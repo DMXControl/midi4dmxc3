@@ -15,6 +15,9 @@ using System.Xml.Linq;
 using System.Windows.Forms;
 using System.Reflection;
 using System.Linq;
+using Lumos.GUI.Windows;
+using Lumos.GUI.Settings;
+using Lumos.GUI.Settings.PE;
 namespace MidiPlugin
 {
 	public class MidiPlugin : GuiPluginBase, IMessageListener
@@ -41,16 +44,6 @@ namespace MidiPlugin
             this.lch = new Utilities.LinkChangedHandler(this.midi);
             ConnectionManager.getInstance().registerMessageListener(this, "KernelInputLayerManager", "LinkChanged");
             ConnectionManager.getInstance().registerMessageListener(this, "ExecutorManager", "OnExecutorChanged");
-            try
-            {
-                var res = ResourceManager.getInstance().loadResource(EResourceAccess.READ_WRITE, EResourceType.CONFIG, metadata2);
-                var data = res.ManagedData;
-                ewHelper.LoadExecutor(data);
-            }
-            catch
-            {
-                log.Info("No configuration found.");
-            }
         }
 		protected override void startupPlugin()
 		{
@@ -60,7 +53,21 @@ namespace MidiPlugin
             this.form.Export += HandleExport;
 			this.devices.Start();
 			WindowManager.getInstance().AddWindow(this.form);
-            
+            try
+            {
+                var res = ResourceManager.getInstance().loadResource(EResourceAccess.READ_WRITE, EResourceType.APPLICATION, metadata2);
+                var data = res.ManagedData;
+                ewHelper.LoadExecutor(data);
+            }
+            catch
+            {
+                log.Info("No configuration found.");
+            }
+            var pemgr = PEManager.getInstance();
+            var settingsBranch = pemgr.GetBranchByID(SettingsManager.getInstance().GetSettignsBranchID()) as SettingsBranch;
+            ConfigurableSettingsNode midiPluginNode = new ConfigurableSettingsNode("Settings:MidiPlugin", "MidiPlugin", "preferences");
+            settingsBranch.AddRecursive(settingsBranch.ID, midiPluginNode);
+            ewHelper.RegisterSettings();
 		}
 
         private void HandleCurrentExecutorPageChanged(object sender, EventArgs e)
@@ -107,7 +114,7 @@ namespace MidiPlugin
 		{
             log.Debug("SaveProject in MidiPlugin");
 			base.saveProject(context);
-            ResourceManager.getInstance().saveResource(EResourceType.CONFIG, new LumosResource("MPlugin", ewHelper.SaveExecutors()));
+            ResourceManager.getInstance().saveResource(EResourceType.APPLICATION, new LumosResource("MPlugin", ewHelper.SaveExecutors()));
 			this.Save();
 		}
 		public override void loadProject(LumosGUIIOContext context)
