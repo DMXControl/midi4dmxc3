@@ -137,7 +137,7 @@ namespace MidiPlugin
         {
             var xElement = new XElement("Rule");
             var type = GetType();
-            xElement.Add(new XElement("Type", type.FullName), new XAttribute("GUID", GUID), new XAttribute("Name", this.Name), new XAttribute("UseBacktrack", this.UseBacktrack));
+            xElement.Add(new XElement("Type", type.FullName), new XAttribute("Name", this.Name), new XAttribute("UseBacktrack", this.UseBacktrack));
             Serialize(xElement);
             return xElement;
         }
@@ -152,7 +152,6 @@ namespace MidiPlugin
             var obj = Activator.CreateInstance(type) as DeviceRule;
             obj.Deserialize(item);
             obj.name = item.Attribute("Name").Value;
-            obj.GUID = item.Attribute("GUID").Value;
             obj.UseBacktrack = bool.Parse(item.Attribute("UseBacktrack").Value);
             return obj;
         }
