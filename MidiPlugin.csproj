@@ -31,13 +31,11 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="LumosGUI, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Program Files (x86)\DMXControl3\GUI\LumosGUI.exe</HintPath>
+    <Reference Include="LumosGUI">
+      <HintPath>..\..\..\..\..\Program Files (x86)\DMXControl3\GUI\LumosGUI.exe</HintPath>
     </Reference>
-    <Reference Include="LumosLIB, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Program Files (x86)\DMXControl3\GUI\LumosLIB.dll</HintPath>
+    <Reference Include="LumosLIB">
+      <HintPath>..\..\..\..\..\Program Files (x86)\DMXControl3\GUI\LumosLIB.dll</HintPath>
     </Reference>
     <Reference Include="NAudio">
       <HintPath>Externals\NAudio.dll</HintPath>
@@ -47,9 +45,8 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="WeifenLuo.WinFormsUI.Docking, Version=2.8.0.0, Culture=neutral, PublicKeyToken=5cded1a1a0a7b481, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Program Files (x86)\DMXControl3\GUI\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
+    <Reference Include="WeifenLuo.WinFormsUI.Docking">
+      <HintPath>..\..\..\..\..\Program Files (x86)\DMXControl3\GUI\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
