@@ -1,26 +1,22 @@
 using Lumos.GUI;
+using Lumos.GUI.Connection;
 using Lumos.GUI.Plugin;
 using Lumos.GUI.Resource;
 using Lumos.GUI.Run;
+using Lumos.GUI.Settings;
+using Lumos.GUI.Settings.PE;
+using Lumos.GUI.Windows;
 using LumosLIB.Kernel.Log;
+using org.dmxc.lumos.Kernel.Messaging.Listener;
+using org.dmxc.lumos.Kernel.Messaging.Message;
 using org.dmxc.lumos.Kernel.Resource;
 using System;
 using System.Collections.Generic;
-using org.dmxc.lumos.Kernel.Input;
-using org.dmxc.lumos.Kernel.Messaging.Listener;
-using Lumos.GUI.Connection;
-using org.dmxc.lumos.Kernel.Messaging.Message;
-using org.dmxc.lumos.Kernel.Executor;
-using System.Xml.Linq;
 using System.Windows.Forms;
-using System.Reflection;
-using System.Linq;
-using Lumos.GUI.Windows;
-using Lumos.GUI.Settings;
-using Lumos.GUI.Settings.PE;
+using System.Xml.Linq;
 namespace MidiPlugin
 {
-	public class MidiPlugin : GuiPluginBase, IMessageListener
+    public class MidiPlugin : GuiPluginBase, IMessageListener
 	{
         public org.dmxc.lumos.Kernel.Input.IInputLayerManager interfacedILM;
         public Type interfacedILMType;

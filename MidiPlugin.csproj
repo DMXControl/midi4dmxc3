@@ -30,6 +30,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="LumosGUI">
       <HintPath>..\..\..\..\..\Program Files (x86)\DMXControl3\GUI\LumosGUI.exe</HintPath>
@@ -84,8 +87,6 @@
     <Compile Include="MidiPlugin\ToolStripDeviceRuleButton.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="MidiPlugin\Utilities\CLRInjector.cs" />
-    <Compile Include="MidiPlugin\Utilities\ExecutorHelper.cs" />
     <Compile Include="MidiPlugin\Utilities\ExecutorWindowHelper.cs" />
     <Compile Include="MidiPlugin\Utilities\Extensions.cs" />
     <Compile Include="MidiPlugin\Utilities\InputLayerManagementHelper.cs" />
