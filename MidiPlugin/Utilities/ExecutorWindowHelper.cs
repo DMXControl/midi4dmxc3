@@ -12,6 +12,8 @@ using org.dmxc.lumos.Kernel.Input;
 using Lumos.GUI.Facade;
 using Lumos.GUI.Settings;
 using org.dmxc.lumos.Kernel.Settings;
+using Lumos.GUI.Windows.Master;
+using org.dmxc.lumos.Kernel.Command;
 
 namespace MidiPlugin.Utilities
 {
@@ -181,6 +183,8 @@ namespace MidiPlugin.Utilities
         
         public const string ExecutorWindow_PGUp = "{6ABAAF63-E751-4A8C-BF8F-4C0CFE52DFAC}";
         public const string ExecutorWindow_PGDn = "{668FBFEC-266E-4F7D-BD3B-ABD2562F31F8}";
+
+        public const string GrandMasterValue = "{6566CC0A-CD26-4892-B76A-62FDBA6C05DC}";
         public Lumos.GUI.Windows.ExecutorPanel.ExecutorView ExecutorWindow { get; private set; }
 
         public System.Windows.Forms.ListBox ExecutorWindowListBox { get; private set; }
@@ -292,6 +296,19 @@ namespace MidiPlugin.Utilities
 
             if (meta.ID.MetadataID == ExecutorWindow_PGDn) return (j, newValue) => { if(object.Equals(newValue, 1.0)){ ExecutorWindowPgUp(false); return true;} return false; };
             if (meta.ID.MetadataID == ExecutorWindow_PGUp) return (j, newValue) => { if(object.Equals(newValue, 1.0)){ ExecutorWindowPgUp( true); return true;} return false; };
+            if (meta.ID.MetadataID == GrandMasterValue) return (j, newValue) =>
+            {
+                if (ConnectionManager.getInstance().Connected)
+                {
+                    ICommand cmd = ConnectionManager.getInstance().GuiSession.getCommandInstance("Kernel", "setGrandMaster");
+                    cmd.execute(new object[]
+                    {
+                        newValue
+                    });
+                    return true;
+                }
+                return false;
+            };
             var executor = meta.Parent;
             var dynExc = dynExecutors.FirstOrDefault(j => j.GUID == executor.ID.MetadataID);
             if (dynExc == null) return null;
@@ -303,6 +320,7 @@ namespace MidiPlugin.Utilities
             if(!meta.ID.ListenerID.Equals(ListenerID)) return false; // check if metadata belongs to me
             var executor = meta.Parent; /* Meta should be one of Fader, Go,Stop,GoStop,Pause,Back,PauseBack,Select,Flash */
             if (meta.ID.MetadataID == ExecutorWindow_PGDn || meta.ID.MetadataID == ExecutorWindow_PGUp) return c.ChannelType == EInputChannelType.BUTTON;
+            if (meta.ID.MetadataID == GrandMasterValue) return c.ChannelType == EInputChannelType.RANGE;
             if (!executorIds.Contains(executor.ID.MetadataID)) return false;
             switch(meta.Name)
             {
@@ -318,7 +336,7 @@ namespace MidiPlugin.Utilities
 
         public InputID ListenerID
         {
-            get { return new InputID("DynamicExecutor", Lumos.GUI.Connection.ConnectionManager.getInstance().SessionName); }
+            get { return new InputID("DynamicExecutor", ConnectionManager.getInstance().SessionName); }
         }
 
         public System.Collections.ObjectModel.ReadOnlyCollection<InputListenerMetadata> Metadata
@@ -349,6 +367,7 @@ namespace MidiPlugin.Utilities
 
             roote.AddChild(new InputListenerMetadata(new InputListenerMetadataID(lId, ExecutorWindow_PGDn), "Page Down", roote, true));
             roote.AddChild(new InputListenerMetadata(new InputListenerMetadataID(lId, ExecutorWindow_PGUp), "Page Up", roote, true));
+            roote.AddChild(new InputListenerMetadata(new InputListenerMetadataID(lId, GrandMasterValue), "Grandmaster", roote, true));
             return new List<InputListenerMetadata>{ roote}.AsReadOnly();
         }
 

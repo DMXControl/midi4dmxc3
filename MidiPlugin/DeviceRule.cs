@@ -7,7 +7,7 @@ namespace MidiPlugin
 {
     public abstract class DeviceRule : ILearnable, IProcessable, ISave, IBacktrack
     {
-        private string name;
+        private string name = ""; //set name to "" to ensure it won't get null
         public event EventHandler NameChanged;
         public event EventHandler<ValueChangedEventArgs> ValueChanged;
         public event EventHandler<MidiEventArgs> MidiMessageSend;
