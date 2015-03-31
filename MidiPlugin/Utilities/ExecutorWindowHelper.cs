@@ -36,75 +36,111 @@ namespace MidiPlugin.Utilities
             public InputLayerChangedCallback AttachInputChannel(InputChannelMetadata c, InputListenerMetadata meta)
             {
                 string metadataID = meta.ID.MetadataID;
-                if(c.ChannelType == EInputChannelType.BUTTON)
-                {
-                    switch (metadataID)
-                    {
-                        case "Go":
-                            return (id, newValue) => { if (assignedExecutor != null && object.Equals(newValue, 1.0)) { assignedExecutor.go(); return true; } return false; };
+				if (c.ChannelType == EInputChannelType.BUTTON) {
+					switch (metadataID) {
+					case "Go":
+						return (id, newValue) => {
+							if (assignedExecutor != null && object.Equals (newValue, 1.0)) {
+								assignedExecutor.go ();
+								return true;
+							}
+							return false;
+						};
 
-                        case "Stop":
-                            return (id, newValue) => { if (assignedExecutor != null && object.Equals(newValue, 1.0)) { assignedExecutor.stop(); return true; } return false; };
+					case "Stop":
+						return (id, newValue) => {
+							if (assignedExecutor != null && object.Equals (newValue, 1.0)) {
+								assignedExecutor.stop ();
+								return true;
+							}
+							return false;
+						};
 
-                        case "GoStop":
-                            return (id, newValue) =>
-                            {
-                                if (assignedExecutor != null)
-                                {
-                                    if (object.Equals(newValue, 1.0))
-                                    {
-                                        assignedExecutor.go();
-                                        return true;
-                                    }
-                                    else if (object.Equals(newValue, 0.0))
-                                    {
-                                        assignedExecutor.stop();
-                                        return true;
-                                    }
-                                }
-                                return false;
-                            };
+					case "GoStop":
+						return (id, newValue) => {
+							if (assignedExecutor != null) {
+								if (object.Equals (newValue, 1.0)) {
+									assignedExecutor.go ();
+									return true;
+								} else if (object.Equals (newValue, 0.0)) {
+									assignedExecutor.stop ();
+									return true;
+								}
+							}
+							return false;
+						};
 
-                        case "Back":
-                            return (id, newValue) => { if (assignedExecutor != null && object.Equals(newValue, 1.0)) { assignedExecutor.goBack(); return true; } return false; };
+					case "Back":
+						return (id, newValue) => {
+							if (assignedExecutor != null && object.Equals (newValue, 1.0)) {
+								assignedExecutor.goBack ();
+								return true;
+							}
+							return false;
+						};
 
-                        case "Pause":
-                            return (id, newValue) => { if (assignedExecutor != null && object.Equals(newValue, 1.0)) { assignedExecutor.go(); return true; } return false; };
+					case "Pause":
+						return (id, newValue) => {
+							if (assignedExecutor != null && object.Equals (newValue, 1.0)) {
+								assignedExecutor.go ();
+								return true;
+							}
+							return false;
+						};
 
-                        case "PauseBack":
-                            return (id, newValue) => { if (assignedExecutor != null && object.Equals(newValue, 1.0)) { assignedExecutor.pauseBack(); return true; } return false; };
+					case "PauseBack":
+						return (id, newValue) => {
+							if (assignedExecutor != null && object.Equals (newValue, 1.0)) {
+								assignedExecutor.pauseBack ();
+								return true;
+							}
+							return false;
+						};
 
-                        case "Flash":
-                            return (id, newValue) =>
-                            {
-                                if (assignedExecutor != null)
-                                {
-                                    if (object.Equals(newValue, 1.0))
-                                    {
-                                        assignedExecutor.flash(true);
-                                        return true;
-                                    }
-                                    else if (object.Equals(newValue, 0.0))
-                                    {
-                                        assignedExecutor.flash(false);
-                                        return true;
-                                    }
-                                }
-                                return false;
-                            };
-                        default: return null;
-                    }
-                }
-                else if(c.ChannelType == EInputChannelType.RANGE)
-                {
-                    if(metadataID == "Fader")
-                        return (id, newValue) => {if(assignedExecutor != null) 
-                        {
-                            if (Tolerance <= 0 || Math.Abs((double)assignedExecutor.FaderValue - (double)newValue) < Tolerance) //toleranz ggf. abschaltbar machen pro dynamic
+					case "Flash":
+						return (id, newValue) => {
+							if (assignedExecutor != null) {
+								if (object.Equals (newValue, 1.0)) {
+									assignedExecutor.flash (true);
+									return true;
+								} else if (object.Equals (newValue, 0.0)) {
+									assignedExecutor.flash (false);
+									return true;
+								}
+							}
+							return false;
+						};
+                    case "Select":
+                        return (id, newValue) => {
+                            if(assignedExecutor != null)
+                            if(object.Equals(newValue, 1.0)){
+                                assignedExecutor.Select();
+                                return true;
+                            }
+                            return false;
+                        };
+					default:
+						return null;
+					}
+				} else if (c.ChannelType == EInputChannelType.RANGE) {
+					if (metadataID == "Fader")
+						return (id, newValue) => {
+							if (assignedExecutor != null) {
+								if (Tolerance <= 0 || Math.Abs ((double)assignedExecutor.FaderValue - (double)newValue) < Tolerance) //toleranz ggf. abschaltbar machen pro dynamic
                             assignedExecutor.FaderValue = (double)newValue; 
-                            return true; 
-                        } return false;};
-                }
+								return true; 
+							}
+							return false;
+						};
+					else if (metadataID == "Timing")
+						return (id, newValue) => {
+							if(assignedExecutor != null){
+								//FIXME
+								return true;
+							}
+							return false;
+						};
+				}
 
                 return null;
             }
