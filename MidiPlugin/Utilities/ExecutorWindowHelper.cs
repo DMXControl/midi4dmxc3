@@ -14,18 +14,26 @@ using Lumos.GUI.Settings;
 using org.dmxc.lumos.Kernel.Settings;
 using Lumos.GUI.Windows.Master;
 using org.dmxc.lumos.Kernel.Command;
+using LumosLIB.GUI.Windows.Programmer;
+using Lumos.GUI.Windows.Programmer;
+using Lumos.GUI.Windows.SceneList;
+using org.dmxc.lumos.Kernel.Executor;
 
 namespace MidiPlugin.Utilities
 {
     public class ExecutorWindowHelper : IInputListener
     {
-        
+
         public class DynamicExecutor
         {
             public double Tolerance { get; set; }
             public string GUID { get; set; }
 
+            internal Func<bool> IsModifierKeyPressed;
+            internal ExecutorView executorWindow;
             private IExecutorFacade assignedExecutorInternal;
+            
+            
             public IExecutorFacade assignedExecutor { get { return assignedExecutorInternal; } set { Clear(); assignedExecutorInternal = value; Update(); } }
 
             private void Update()
@@ -38,111 +46,157 @@ namespace MidiPlugin.Utilities
             public InputLayerChangedCallback AttachInputChannel(InputChannelMetadata c, InputListenerMetadata meta)
             {
                 string metadataID = meta.ID.MetadataID;
-				if (c.ChannelType == EInputChannelType.BUTTON) {
-					switch (metadataID) {
-					case "Go":
-						return (id, newValue) => {
-							if (assignedExecutor != null && object.Equals (newValue, 1.0)) {
-								assignedExecutor.go ();
-								return true;
-							}
-							return false;
-						};
+                if (c.ChannelType == EInputChannelType.BUTTON)
+                {
+                    switch (metadataID)
+                    {
+                        case "Go":
+                            return (id, newValue) =>
+                            {
+                                if (assignedExecutor != null && object.Equals(newValue, 1.0))
+                                {
+                                    assignedExecutor.go();
+                                    return true;
+                                }
+                                return false;
+                            };
 
-					case "Stop":
-						return (id, newValue) => {
-							if (assignedExecutor != null && object.Equals (newValue, 1.0)) {
-								assignedExecutor.stop ();
-								return true;
-							}
-							return false;
-						};
+                        case "Stop":
+                            return (id, newValue) =>
+                            {
+                                if (assignedExecutor != null && object.Equals(newValue, 1.0))
+                                {
+                                    assignedExecutor.stop();
+                                    return true;
+                                }
+                                return false;
+                            };
 
-					case "GoStop":
-						return (id, newValue) => {
-							if (assignedExecutor != null) {
-								if (object.Equals (newValue, 1.0)) {
-									assignedExecutor.go ();
-									return true;
-								} else if (object.Equals (newValue, 0.0)) {
-									assignedExecutor.stop ();
-									return true;
-								}
-							}
-							return false;
-						};
+                        case "GoStop":
+                            return (id, newValue) =>
+                            {
+                                if (assignedExecutor != null)
+                                {
+                                    if (object.Equals(newValue, 1.0))
+                                    {
+                                        assignedExecutor.go();
+                                        return true;
+                                    }
+                                    else if (object.Equals(newValue, 0.0))
+                                    {
+                                        assignedExecutor.stop();
+                                        return true;
+                                    }
+                                }
+                                return false;
+                            };
 
-					case "Back":
-						return (id, newValue) => {
-							if (assignedExecutor != null && object.Equals (newValue, 1.0)) {
-								assignedExecutor.goBack ();
-								return true;
-							}
-							return false;
-						};
+                        case "Back":
+                            return (id, newValue) =>
+                            {
+                                if (assignedExecutor != null && object.Equals(newValue, 1.0))
+                                {
+                                    assignedExecutor.goBack();
+                                    return true;
+                                }
+                                return false;
+                            };
 
-					case "Pause":
-						return (id, newValue) => {
-							if (assignedExecutor != null && object.Equals (newValue, 1.0)) {
-								assignedExecutor.go ();
-								return true;
-							}
-							return false;
-						};
+                        case "Pause":
+                            return (id, newValue) =>
+                            {
+                                if (assignedExecutor != null && object.Equals(newValue, 1.0))
+                                {
+                                    assignedExecutor.go();
+                                    return true;
+                                }
+                                return false;
+                            };
 
-					case "PauseBack":
-						return (id, newValue) => {
-							if (assignedExecutor != null && object.Equals (newValue, 1.0)) {
-								assignedExecutor.pauseBack ();
-								return true;
-							}
-							return false;
-						};
+                        case "PauseBack":
+                            return (id, newValue) =>
+                            {
+                                if (assignedExecutor != null && object.Equals(newValue, 1.0))
+                                {
+                                    assignedExecutor.pauseBack();
+                                    return true;
+                                }
+                                return false;
+                            };
 
-					case "Flash":
-						return (id, newValue) => {
-							if (assignedExecutor != null) {
-								if (object.Equals (newValue, 1.0)) {
-									assignedExecutor.flash (true);
-									return true;
-								} else if (object.Equals (newValue, 0.0)) {
-									assignedExecutor.flash (false);
-									return true;
-								}
-							}
-							return false;
-						};
-                    case "Select":
-                        return (id, newValue) => {
-                            if(assignedExecutor != null)
-                            if(object.Equals(newValue, 1.0)){
-                                assignedExecutor.Select();
+                        case "Flash":
+                            return (id, newValue) =>
+                            {
+                                if (assignedExecutor != null)
+                                {
+                                    if (object.Equals(newValue, 1.0))
+                                    {
+                                        assignedExecutor.flash(true);
+                                        return true;
+                                    }
+                                    else if (object.Equals(newValue, 0.0))
+                                    {
+                                        assignedExecutor.flash(false);
+                                        return true;
+                                    }
+                                }
+                                return false;
+                            };
+                        case "Select":
+                            return (id, newValue) =>
+                            {
+                                if (assignedExecutor != null)
+                                    if (object.Equals(newValue, 1.0))
+                                    {
+                                        if(WindowManager.getInstance().StoreActive)
+                                        {
+                                            if(IsModifierKeyPressed() || assignedExecutor.HasOption(EExecutorOptions.SHOW__PROGRAMMER__FILTER))
+                                            {
+                                                ProgrammerFilterPredicate predicate;
+                                                if(ProgrammerFilter.ShowFilter(out predicate))
+                                                    assignedExecutor.storeProgrammerAtExecutor(assignedExecutor.SceneCount, predicate);
+                                                return false;
+                                            }
+                                            else
+                                                assignedExecutor.storeProgrammerAtExecutor(assignedExecutor.SceneCount, null);
+                                            WindowManager.getInstance().ElementStored();
+                                        }
+                                        else
+                                        {
+                                            SceneListWindowManager.getInstance().openSceneList(assignedExecutor.SceneList, IsModifierKeyPressed());
+                                            return true;
+                                        }
+                                    }
+                                return false;
+                            };
+                        default:
+                            return null;
+                    }
+                }
+                else if (c.ChannelType == EInputChannelType.RANGE)
+                {
+                    if (metadataID == "Fader")
+                        return (id, newValue) =>
+                        {
+                            if (assignedExecutor != null)
+                            {
+                                if (Tolerance <= 0 || Math.Abs((double)assignedExecutor.FaderValue - (double)newValue) < Tolerance) //toleranz ggf. abschaltbar machen pro dynamic
+                                    assignedExecutor.FaderValue = (double)newValue;
                                 return true;
                             }
                             return false;
                         };
-					default:
-						return null;
-					}
-				} else if (c.ChannelType == EInputChannelType.RANGE) {
-					if (metadataID == "Fader")
-						return (id, newValue) => {
-							if (assignedExecutor != null) {
-								if (Tolerance <= 0 || Math.Abs ((double)assignedExecutor.FaderValue - (double)newValue) < Tolerance) //toleranz ggf. abschaltbar machen pro dynamic
-                            assignedExecutor.FaderValue = (double)newValue; 
-								return true; 
-							}
-							return false;
-						};
-					else if (metadataID == "Timing")
-						return (id, newValue) => {
-							if(assignedExecutor != null){
-								//FIXME
-								return true;
-							}
-							return false;
-						};
-				}
+                    else if (metadataID == "Timing")
+                        return (id, newValue) =>
+                        {
+                            if (assignedExecutor != null)
+                            {
+                                //FIXME
+                                return true;
+                            }
+                            return false;
+                        };
+                }
 
                 return null;
             }
@@ -162,7 +216,7 @@ namespace MidiPlugin.Utilities
 
             private void OnFaderValueChanged(object sender, double e)
             {
-                if(FaderValueChanged != null) FaderValueChanged(sender, e);
+                if (FaderValueChanged != null) FaderValueChanged(sender, e);
             }
             public event FacadeChangedEvent<double> FaderValueChanged;
         }
@@ -179,12 +233,17 @@ namespace MidiPlugin.Utilities
                                           "{037D0678-A050-478F-8667-9586F56BF8C5}",
                                       };
 
-        static DynamicExecutor[] dynExecutors = executorIds.Select(j => new DynamicExecutor { GUID = j, Tolerance = 0.07 }).ToArray();
-        
+        DynamicExecutor[] dynExecutors;
+        public ExecutorWindowHelper()
+        {
+            dynExecutors = executorIds.Select(j => new DynamicExecutor { GUID = j, Tolerance = 0.07, IsModifierKeyPressed = () => { return modifierKey; } }).ToArray();
+        }
+        private bool modifierKey;
         public const string ExecutorWindow_PGUp = "{6ABAAF63-E751-4A8C-BF8F-4C0CFE52DFAC}";
         public const string ExecutorWindow_PGDn = "{668FBFEC-266E-4F7D-BD3B-ABD2562F31F8}";
 
         public const string GrandMasterValue = "{6566CC0A-CD26-4892-B76A-62FDBA6C05DC}";
+        public const string ModifierKeyValue = "{97E6F12F-CA8E-43F5-BD93-E3FB2D4DE8BE}";
         public Lumos.GUI.Windows.ExecutorPanel.ExecutorView ExecutorWindow { get; private set; }
 
         public System.Windows.Forms.ListBox ExecutorWindowListBox { get; private set; }
@@ -196,17 +255,20 @@ namespace MidiPlugin.Utilities
             //Cleanup();
             /* Einklinken in ExecutorWindow */
             ExecutorWindow = WindowManager.getInstance().GuiWindows.First(j => j.GetType() == typeof(ExecutorView)) as ExecutorView;
-
+            foreach (var item in dynExecutors)
+            {
+                item.executorWindow = ExecutorWindow;
+            }
             var ewType = typeof(ExecutorView);
 
             ExecutorWindowListBox = ewType.GetField("lstPages", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ExecutorWindow) as System.Windows.Forms.ListBox;
             ExecutorWindowListBox.SelectedValueChanged += HandleCurrentExecutorPageChanged;
             ExecutorWindowListBox.SelectedIndexChanged += HandleCurrentExecutorPageChanged;
-            
+
             MidiPlugin.log.Info("ExecutorWindow hook established.");
 
             var currentItem = ExecutorWindowListBox.SelectedItem as ListBoxItem; /* Fetch current item */
-            if(currentItem != null)
+            if (currentItem != null)
             {
                 CurrentExecutorPage = ConnectionManager.getInstance().GuiSession.GetExecutorPageByID(currentItem.ID);
                 HandleCurrentExecutorPageChanged(null, null); /* Update this. */
@@ -215,7 +277,7 @@ namespace MidiPlugin.Utilities
             {
                 InputLayerManager.getInstance().registerInputListener(this);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 MidiPlugin.log.Warn("Dynamic Executors already registered.");
             }
@@ -236,7 +298,7 @@ namespace MidiPlugin.Utilities
             {
                 InputLayerManager.getInstance().deregisterInputListener(this);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 MidiPlugin.log.Info("ExecutorWindowHelper not registered.");
             }
@@ -247,7 +309,7 @@ namespace MidiPlugin.Utilities
         private void HandleCurrentExecutorPageChanged(object sender, EventArgs e)
         {
             var connMgr = ConnectionManager.getInstance().GuiSession;
-           
+
             var item = ExecutorWindowListBox.SelectedItem as ListBoxItem;
             if (item != null)
             {
@@ -288,27 +350,39 @@ namespace MidiPlugin.Utilities
             else
             {
                 if (up) ExecutorWindowListBox.SelectedIndex = Math.Max(ExecutorWindowListBox.SelectedIndex - 1, 0);
-                else ExecutorWindowListBox.SelectedIndex = Math.Min(ExecutorWindowListBox.SelectedIndex+ 1, ExecutorWindowListBox.Items.Count -1);
+                else ExecutorWindowListBox.SelectedIndex = Math.Min(ExecutorWindowListBox.SelectedIndex + 1, ExecutorWindowListBox.Items.Count - 1);
             }
         }
         public InputLayerChangedCallback AttachInputChannel(InputChannelMetadata c, InputListenerMetadata meta)
         {
 
-            if (meta.ID.MetadataID == ExecutorWindow_PGDn) return (j, newValue) => { if(object.Equals(newValue, 1.0)){ ExecutorWindowPgUp(false); return true;} return false; };
-            if (meta.ID.MetadataID == ExecutorWindow_PGUp) return (j, newValue) => { if(object.Equals(newValue, 1.0)){ ExecutorWindowPgUp( true); return true;} return false; };
-            if (meta.ID.MetadataID == GrandMasterValue) return (j, newValue) =>
-            {
-                if (ConnectionManager.getInstance().Connected)
+            if (meta.ID.MetadataID == ExecutorWindow_PGDn) return (j, newValue) => { if (object.Equals(newValue, 1.0)) { ExecutorWindowPgUp(false); return true; } return false; };
+            if (meta.ID.MetadataID == ExecutorWindow_PGUp) return (j, newValue) => { if (object.Equals(newValue, 1.0)) { ExecutorWindowPgUp(true); return true; } return false; };
+            if (meta.ID.MetadataID == ModifierKeyValue)
+                return (j, newValue) =>
                 {
-                    ICommand cmd = ConnectionManager.getInstance().GuiSession.getCommandInstance("Kernel", "setGrandMaster");
-                    cmd.execute(new object[]
+                    if (object.Equals(newValue, 1.0))
                     {
-                        newValue
-                    });
-                    return true;
-                }
-                return false;
-            };
+                        modifierKey = true;
+                        return true;
+                    }
+                    modifierKey = false;
+                    return false;
+                };
+            if (meta.ID.MetadataID == GrandMasterValue)
+                return (j, newValue) =>
+                {
+                    if (ConnectionManager.getInstance().Connected)
+                    {
+                        ICommand cmd = ConnectionManager.getInstance().GuiSession.getCommandInstance("Kernel", "setGrandMaster");
+                        cmd.execute(new object[]
+                        {
+                                        newValue
+                        });
+                        return true;
+                    }
+                    return false;
+                };
             var executor = meta.Parent;
             var dynExc = dynExecutors.FirstOrDefault(j => j.GUID == executor.ID.MetadataID);
             if (dynExc == null) return null;
@@ -317,12 +391,12 @@ namespace MidiPlugin.Utilities
 
         public bool CanAttachInputChannel(InputChannelMetadata c, InputListenerMetadata meta)
         {
-            if(!meta.ID.ListenerID.Equals(ListenerID)) return false; // check if metadata belongs to me
+            if (!meta.ID.ListenerID.Equals(ListenerID)) return false; // check if metadata belongs to me
             var executor = meta.Parent; /* Meta should be one of Fader, Go,Stop,GoStop,Pause,Back,PauseBack,Select,Flash */
             if (meta.ID.MetadataID == ExecutorWindow_PGDn || meta.ID.MetadataID == ExecutorWindow_PGUp) return c.ChannelType == EInputChannelType.BUTTON;
             if (meta.ID.MetadataID == GrandMasterValue) return c.ChannelType == EInputChannelType.RANGE;
             if (!executorIds.Contains(executor.ID.MetadataID)) return false;
-            switch(meta.Name)
+            switch (meta.Name)
             {
                 case "Fader": return c.ChannelType == EInputChannelType.RANGE;
                 default: return c.ChannelType == EInputChannelType.BUTTON;
@@ -349,7 +423,7 @@ namespace MidiPlugin.Utilities
             var lId = ListenerID;
             InputListenerMetadata roote = new InputListenerMetadata(new InputListenerMetadataID(lId, ExecutorWindow_ListenerId), "Dynamic Executors", null, false);
 
-            for (int i = 0; i < ExecutorWindow_MaxExecutors;i++ )
+            for (int i = 0; i < ExecutorWindow_MaxExecutors; i++)
             {
                 var id = new InputListenerMetadataID(lId, executorIds[i]);
                 InputListenerMetadata executorRoot = new InputListenerMetadata(id, "Current Executor " + i.ToString(), roote, false);
@@ -368,7 +442,8 @@ namespace MidiPlugin.Utilities
             roote.AddChild(new InputListenerMetadata(new InputListenerMetadataID(lId, ExecutorWindow_PGDn), "Page Down", roote, true));
             roote.AddChild(new InputListenerMetadata(new InputListenerMetadataID(lId, ExecutorWindow_PGUp), "Page Up", roote, true));
             roote.AddChild(new InputListenerMetadata(new InputListenerMetadataID(lId, GrandMasterValue), "Grandmaster", roote, true));
-            return new List<InputListenerMetadata>{ roote}.AsReadOnly();
+            roote.AddChild(new InputListenerMetadata(new InputListenerMetadataID(lId, ModifierKeyValue), "Modifier Key", roote, true));
+            return new List<InputListenerMetadata> { roote }.AsReadOnly();
         }
 
         #endregion
@@ -387,7 +462,7 @@ namespace MidiPlugin.Utilities
                 var id = item.getValue<string>("ID");
                 var _exc = dynExecutors.FirstOrDefault(j => j.GUID == id);
                 if (_exc == null) return;
-                _exc.Tolerance = item.getValue<double>("Tolerance");    
+                _exc.Tolerance = item.getValue<double>("Tolerance");
             }
         }
 
@@ -405,16 +480,16 @@ namespace MidiPlugin.Utilities
         }
 
         internal void RegisterSettings()
-        
+
         {
             var settings = SettingsManager.getInstance();
-            for (int i = 0; i < dynExecutors.Length;i++ )
+            for (int i = 0; i < dynExecutors.Length; i++)
             {
-                settings.registerGuiSetting(new SettingsMetadata(ESettingsRegisterType.APPLICATION, "Executor", null, "Dynamic Executor " + (i+1)+": Tolerance", "MPL.EXECFG" + i, "", null)
-    {
-        MinDouble = -1,
-        MaxDouble = 1
-    }, dynExecutors[i].Tolerance);
+                settings.registerGuiSetting(new SettingsMetadata(ESettingsRegisterType.APPLICATION, "Executor", null, "Dynamic Executor " + (i + 1) + ": Tolerance", "MPL.EXECFG" + i, "", null)
+                {
+                    MinDouble = -1,
+                    MaxDouble = 1
+                }, dynExecutors[i].Tolerance);
             }
             settings.GUISettingChanged += HandleSettingChanged;
         }
@@ -422,7 +497,7 @@ namespace MidiPlugin.Utilities
         private void HandleSettingChanged(object sender, SettingChangedEventArgs args)
         {
             MidiPlugin.log.Info("SettingChanged: {0}, NewValue: {1}, Type:{2}", args.PropertyName, args.NewValue, args.Type);
-            for(int i = 0; i < dynExecutors.Length; i++)
+            for (int i = 0; i < dynExecutors.Length; i++)
             {
                 dynExecutors[i].Tolerance = SettingsManager.getInstance().getGuiSetting<double>("MPL.EXECFG" + i);
             }
