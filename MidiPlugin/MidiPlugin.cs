@@ -17,54 +17,71 @@ using System.Xml.Linq;
 namespace MidiPlugin
 {
     public class MidiPlugin : GuiPluginBase, IMessageListener
-	{
+    {
         public org.dmxc.lumos.Kernel.Input.IInputLayerManager interfacedILM;
         public Type interfacedILMType;
-		internal static readonly ILumosLog log = LumosLogger.getInstance(typeof(MidiPlugin));
-		private static readonly LumosResourceMetadata myMetaData = new LumosResourceMetadata("MidiSettings.xml", ELumosResourceType.MANAGED_TREE);
+        internal static readonly ILumosLog log = LumosLogger.getInstance(typeof(MidiPlugin));
+        private static readonly LumosResourceMetadata myMetaData = new LumosResourceMetadata("MidiSettings.xml", ELumosResourceType.MANAGED_TREE);
         private static readonly LumosResourceMetadata metadata2 = new LumosResourceMetadata("MidiPlugin.Config.xml", ELumosResourceType.MANAGED_TREE);
-		private MidiForm form;
-		private DeviceInformation devices;
-		private MidiInformation midi;
-		private AssemblyHelper asmh;
-        private Utilities.ExecutorWindowHelper ewHelper = new Utilities.ExecutorWindowHelper();
+        private MidiForm form;
+        private DeviceInformation devices;
+        private MidiInformation midi;
+        private AssemblyHelper asmh;
+        private Utilities.ExecutorWindowHelper ewHelper;
         private Utilities.LinkChangedHandler lch;
-		public MidiPlugin() : base("{2E9C6D8E-431E-4d24-965C-AC4080C25CBA}", "Midi Plugin")
-		{
-		}
-		protected override void initializePlugin()
-		{
-			this.asmh = new AssemblyHelper();
-			this.devices = new DeviceInformation();
-			this.midi = new MidiInformation();
-            this.lch = new Utilities.LinkChangedHandler(this.midi);
-            ConnectionManager.getInstance().registerMessageListener(this, "KernelInputLayerManager", "LinkChanged");
-            ConnectionManager.getInstance().registerMessageListener(this, "ExecutorManager", "OnExecutorChanged");
+        public MidiPlugin() : base("{2E9C6D8E-431E-4d24-965C-AC4080C25CBA}", "Midi Plugin")
+        {
         }
-		protected override void startupPlugin()
-		{
-            log.Debug("Startup MidiPlugin!");
-			this.form = new MidiForm();
-            this.form.Import += HandleImport;
-            this.form.Export += HandleExport;
-			this.devices.Start();
-			WindowManager.getInstance().AddWindow(this.form);
+        protected override void initializePlugin()
+        {
             try
             {
-                var res = ResourceManager.getInstance().loadResource(EResourceAccess.READ_WRITE, EResourceType.APPLICATION, metadata2);
-                var data = res.ManagedData;
-                ewHelper.LoadExecutor(data);
+                log.Debug("Initialize MidiPlugin!");
+                this.ewHelper = new Utilities.ExecutorWindowHelper();
+                this.asmh = new AssemblyHelper();
+                this.devices = new DeviceInformation();
+                this.midi = new MidiInformation();
+                this.lch = new Utilities.LinkChangedHandler(this.midi);
+                ewHelper.RegisterSettings();
             }
-            catch
+            catch (Exception ex)
             {
-                log.Info("No configuration found.");
+                log.Error("Error initializing plugin...", ex);
             }
-            var pemgr = PEManager.getInstance();
-            var settingsBranch = pemgr.GetBranchByID(SettingsManager.getInstance().GetSettignsBranchID()) as SettingsBranch;
-            ConfigurableSettingsNode midiPluginNode = new ConfigurableSettingsNode("Settings:MidiPlugin", "MidiPlugin", "preferences");
-            settingsBranch.AddRecursive(settingsBranch.ID, midiPluginNode);
-            ewHelper.RegisterSettings();
-		}
+        }
+        protected override void startupPlugin()
+        {
+            try
+            {
+                log.Debug("Startup MidiPlugin!");
+                ConnectionManager.getInstance().registerMessageListener(this, "KernelInputLayerManager", "LinkChanged");
+                ConnectionManager.getInstance().registerMessageListener(this, "ExecutorManager", "OnExecutorChanged");
+                this.form = new MidiForm();
+                this.form.Import += HandleImport;
+                this.form.Export += HandleExport;
+                this.devices.Start();
+                WindowManager.getInstance().AddWindow(this.form);
+                try
+                {
+                    var res = ResourceManager.getInstance().loadResource(EResourceAccess.READ_WRITE, EResourceType.APPLICATION, metadata2);
+                    var data = res.ManagedData;
+                    ewHelper.LoadExecutor(data);
+                }
+                catch
+                {
+                    log.Info("No configuration found.");
+                }
+                //var pemgr = PEManager.getInstance();
+                //var settingsBranch = pemgr.GetBranchByID(SettingsManager.getInstance().GetSettignsBranchID()) as SettingsBranch;
+                //ConfigurableSettingsNode midiPluginNode = new ConfigurableSettingsNode("Settings:MidiPlugin", "MidiPlugin", "preferences");
+                //settingsBranch.AddRecursive(settingsBranch.ID, midiPluginNode);
+                SettingsManager.getInstance().SettingChanged += ewHelper.HandleSettingChanged;
+            }
+            catch (Exception ex)
+            {
+                log.Error("Error startup plugin...", ex);
+            }
+        }
 
         private void HandleCurrentExecutorPageChanged(object sender, EventArgs e)
         {
@@ -92,102 +109,115 @@ namespace MidiPlugin
             if (dr != DialogResult.OK) return;
             LoadFromXml(XElement.Load(ofd.FileName));
         }
-		protected override void shutdownPlugin()
-		{
-            log.Debug("Shutdown MidiPlugin!");
-			this.devices.Stop();
-			WindowManager.getInstance().RemoveWindow(this.form);
-			if (this.form.InvokeRequired)
-			{
-				this.form.Invoke(new Action(this.form.Close));
-			}
-			else
-			{
-				this.form.Close();
-			}
-		}
-		public override void saveProject(LumosGUIIOContext context)
-		{
+        protected override void shutdownPlugin()
+        {
+            try
+            {
+                log.Debug("Shutdown MidiPlugin!");
+                this.devices.Stop();
+                ConnectionManager.getInstance().deregisterMessageListener(this, "KernelInputLayerManager", "LinkChanged");
+                ConnectionManager.getInstance().deregisterMessageListener(this, "ExecutorManager", "OnExecutorChanged");
+                WindowManager.getInstance().RemoveWindow(this.form);
+                SettingsManager.getInstance().SettingChanged -= ewHelper.HandleSettingChanged;
+                if (this.form.InvokeRequired)
+                {
+                    this.form.Invoke(new Action(this.form.Close));
+                }
+                else
+                {
+                    this.form.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error("Error shutting down plugin...", ex);
+            }
+        }
+        public override void saveProject(LumosGUIIOContext context)
+        {
+            if (!ConnectionManager.getInstance().Connected) return;
             log.Debug("SaveProject in MidiPlugin");
-			base.saveProject(context);
+            base.saveProject(context);
             ResourceManager.getInstance().saveResource(EResourceType.APPLICATION, new LumosResource("MPlugin", ewHelper.SaveExecutors()));
-			this.Save();
-		}
-		public override void loadProject(LumosGUIIOContext context)
-		{
+            this.Save();
+        }
+        public override void loadProject(LumosGUIIOContext context)
+        {
+            if (!ConnectionManager.getInstance().Connected) return;
             log.Debug("LoadProject in MidiPlugin");
-			base.loadProject(context);
-			this.Load();
+            base.loadProject(context);
+            this.Load();
             lch.Update(ewHelper);
-		}
-		public override void closeProject(LumosGUIIOContext context)
-		{
-			base.closeProject(context);
-			this.Close();
-		}
-		public override void connectionClosing()
-		{
-			this.Save();
-			this.Close();
+        }
+        public override void closeProject(LumosGUIIOContext context)
+        {
+            if (!ConnectionManager.getInstance().Connected) return;
+            base.closeProject(context);
+            this.Close();
+        }
+        public override void connectionClosing()
+        {
+            this.Save();
+            this.Close();
 
             ewHelper.Cleanup();
             lch.Update(ewHelper);
             base.connectionClosing();
-		}
-		public override void connectionEstablished()
-		{
-			this.Load();
+        }
+        public override void connectionEstablished()
+        {
+            this.Load();
 
 
             ewHelper.Establish();
             lch.Update(ewHelper);
-			base.connectionEstablished();
-		}
-		private void Close()
-		{
-			List<RuleSet> rules = new List<RuleSet>(this.midi.RuleSets);
-			foreach (RuleSet item in rules)
-			{
-				this.midi.RuleSets.Remove(item);
-			}
-           
-		}
-		private void Load()
-		
+            base.connectionEstablished();
+        }
+        private void Close()
         {
-			this.Close();
-			if (ResourceManager.getInstance().existsResource(EResourceType.PROJECT, MidiPlugin.myMetaData))
-			{
-				LumosResource r = ResourceManager.getInstance().loadResource(EResourceAccess.READ_WRITE, EResourceType.PROJECT, MidiPlugin.myMetaData);
-				ManagedTreeItem item = r.ManagedData;
-				foreach (ManagedTreeItem mti in item.GetChildren("RuleSet"))
-				{
-					RuleSet rs = RuleSet.Load(mti);
-					if (rs != null)
-					{
-						this.midi.RuleSets.Add(rs);
-					}
-				}
-			}
-		}
-		private void Save()
-		{
-            log.Debug("Save called!");
-			ManagedTreeItem _midi = new ManagedTreeItem("MidiSettings");
-			foreach (RuleSet item in this.midi.RuleSets)
-			{
-				ManagedTreeItem rs = new ManagedTreeItem("RuleSet");
-				item.Save(rs);
-				_midi.AddChild(rs);
-			}
-            log.Debug("Creating resource");
-			LumosResource res = new LumosResource(MidiPlugin.myMetaData.Name, _midi);
-            log.Debug("Resource created: {0}", res.ManagedData.Children.Count);
-			ResourceManager.getInstance().saveResource(EResourceType.PROJECT, res);
+            List<RuleSet> rules = new List<RuleSet>(this.midi.RuleSets);
+            foreach (RuleSet item in rules)
+            {
+                this.midi.RuleSets.Remove(item);
+            }
 
-            
+        }
+        private void Load()
+
+        {
+            this.Close();
+            if (ResourceManager.getInstance().existsResource(EResourceType.PROJECT, MidiPlugin.myMetaData))
+            {
+                LumosResource r = ResourceManager.getInstance().loadResource(EResourceAccess.READ_WRITE, EResourceType.PROJECT, MidiPlugin.myMetaData);
+                ManagedTreeItem item = r.ManagedData;
+                foreach (ManagedTreeItem mti in item.GetChildren("RuleSet"))
+                {
+                    RuleSet rs = RuleSet.Load(mti);
+                    if (rs != null)
+                    {
+                        this.midi.RuleSets.Add(rs);
+                    }
+                }
+            }
+        }
+        private void Save()
+        {
+            log.Debug("Save called!");
+            ManagedTreeItem _midi = new ManagedTreeItem("MidiSettings");
+            foreach (RuleSet item in this.midi.RuleSets)
+            {
+                ManagedTreeItem rs = new ManagedTreeItem("RuleSet");
+                item.Save(rs);
+                _midi.AddChild(rs);
+            }
+            log.Debug("Creating resource");
+            LumosResource res = new LumosResource(MidiPlugin.myMetaData.Name, _midi);
+            log.Debug("Resource created: {0}", res.ManagedData.Children.Count);
+            ResourceManager.getInstance().saveResource(EResourceType.PROJECT, res);
+
+
             log.Debug("Resource saved");
-		}
+        }
 
         public XElement Serialize()
         {
@@ -208,18 +238,18 @@ namespace MidiPlugin
                 this.midi.RuleSets.Add(rs);
             }
         }
-		protected override void DisposePlugin(bool disposing)
-		{
-			if (this.midi != null)
-			{
-				this.midi.Dispose();
-			}
-			if (this.devices != null)
-			{
-				this.devices.Dispose();
-			}
-			base.DisposePlugin(disposing);
-		}
+        protected override void DisposePlugin(bool disposing)
+        {
+            if (this.midi != null)
+            {
+                this.midi.Dispose();
+            }
+            if (this.devices != null)
+            {
+                this.devices.Dispose();
+            }
+            base.DisposePlugin(disposing);
+        }
 
         #region IMessageListener Member
 
@@ -227,7 +257,7 @@ namespace MidiPlugin
         {
             //log.Info("OnMessage {0}", message.GetType().Name);
             var msg = message as InputLinkChangedMessage;
-            if(msg != null)
+            if (msg != null)
                 lch.Update(ewHelper);
         }
 

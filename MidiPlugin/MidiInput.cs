@@ -33,13 +33,19 @@ namespace MidiPlugin
 		}
 		private void HandleMsgReceived(object s, MidiInMessageEventArgs e)
 		{
-			MidiMessage msg = default(MidiMessage);
-			msg.channel = (byte)(e.MidiEvent.Channel);
-			msg.message = (byte)(e.RawMessage - (msg.channel - 1));
-			msg.data1 = (byte)(e.RawMessage >> 8);
-			msg.data2 = (byte)(e.RawMessage >> 16);
-			this.OnMessageReceived(msg);
-			Debug.WriteLine("in:" + msg.Data);
+            try {
+                MidiMessage msg = default(MidiMessage);
+                msg.channel = (byte)(e.MidiEvent.Channel);
+                msg.message = (byte)(e.RawMessage - (msg.channel - 1));
+                msg.data1 = (byte)(e.RawMessage >> 8);
+                msg.data2 = (byte)(e.RawMessage >> 16);
+                this.OnMessageReceived(msg);
+                Debug.WriteLine("in:" + msg.Data);
+            }
+            catch(Exception ex)
+            {
+                MidiPlugin.log.Error("Error processing incoming midi message", ex);
+            }
 		}
 		protected void OnMessageReceived(MidiMessage m)
 		{
