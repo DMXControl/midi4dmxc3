@@ -19,104 +19,127 @@ namespace MidiPlugin.Utilities
         static InputLayerManager ilm = Lumos.GUI.Input.InputLayerManager.getInstance();
 
 
-
-        public void Update(ExecutorWindowHelper ewHelper)
+        public void Clear()
         {
-            try {
-                int removed = 0, created = 0;
-                helperList.ForEach(j => j.Value.current = false); /* Setze alle current auf false für differentielles Update */
-                var links = InputLayerManager.getInstance().LinkedChannels;
-                foreach (var item in links)
-                {
-                    var listener = item.Key;
-                    foreach (var item2 in item.Value)
+            foreach (var item in helperList)
+            {
+                item.Value.Unregister();
+            }
+            helperList.Clear();
+        }
+
+        public void Update(ExecutorWindowHelper ewHelper, InputLinkChangedMessage ilcMsg)
+        {
+            if (ilcMsg.Type == AbstractChangedMessage.EChangeType.CHANGED) return; //nothing to do?
+
+            //retrieve InputLayer object
+            var layer = midiInf.RuleSets.Select(j => j.InputLayer).FirstOrDefault(j => j.Metadata.ID.Equals(ilcMsg.ID.ParentLayer));
+            if (layer == null)
+            {
+                MidiPlugin.log.Debug("Input Layer {0} does not belong to me, ignoring", ilcMsg.ID.ParentLayer.ID);
+                return;
+            }
+
+            //retrieve InputChannel object
+            var channel = layer.Channels.FirstOrDefault(j => j.Metadata.ID.Equals(ilcMsg.ID));
+            if(channel == null)
+            {
+                MidiPlugin.log.Warn("Could not retrieve channel {0}", ilcMsg.ID.ChannelID);
+                return;
+            }
+            var listener = ilm.getInputListenerByID(ilcMsg.Listener.MetadataID);
+            var channelId = channel.ID.ChannelID;
+            switch(ilcMsg.Listener.ListenerID.ID)
+            {
+                case "ExecutorManager":
+                    var executor = Lumos.GUI.Connection.ConnectionManager.getInstance().GuiSession.Executors.First(j => j.ID == listener.Parent.ID.MetadataID);
+                    if(executor == null)
                     {
-                        /* Channel updates */
-                        var layer = ilm.getInputLayerByID(item2.ID.ParentLayer);
-                        var layerObj = midiInf.RuleSets.Select(j => j.InputLayer).FirstOrDefault(j => j.Metadata.Equals(layer));
-                        if (layerObj == null) continue;
-                        var channel = layerObj.Channels.FirstOrDefault(j => j.Metadata.Equals(item2));
-                        if (channel == null) continue;
-
-                        if (listener.ID.ListenerID.ID == "ExecutorManager")
+                        MidiPlugin.log.Warn("Executor {0} does not exist, but is linked.", listener.Parent.ID.MetadataID);
+                        return;
+                    }
+                    if (listener.Name == "Fader")
+                    {
+                        //Link to executor fader
+                        if(ilcMsg.Type == AbstractChangedMessage.EChangeType.ADDED)
                         {
-                            // ExecutorManager detected
-
-                            if (listener.Name == "Fader")
+                            try
                             {
-                                MidiPlugin.log.Debug("Link to Fader detected.");
-                                var executor = Lumos.GUI.Connection.ConnectionManager.getInstance().GuiSession.Executors.First(j => j.ID == listener.Parent.ID.MetadataID);
-                                MidiBacktrackHelper helper;
-                                if (!helperList.TryGetValue(channel.ID.ChannelID, out helper))
-                                {
-                                    helper = new MidiBacktrackHelper(channel as MidiRangeInputChannel, executor);
-                                    helperList.Add(channel.ID.ChannelID, helper);
-                                    created++;
-                                    MidiPlugin.log.Info("Link to executor {0} established.", listener.Parent.Name);
-                                }
-                                helper.current = true;
-                                if (!helper.registered)
-                                    helper.Register();
+                                var mbh = new MidiBacktrackHelper(channel as MidiInputChannel, executor);
+                                helperList.Add(channelId, mbh);
+                                mbh.Register();
+                            }
+                            catch(Exception e)
+                            {
+                                MidiPlugin.log.Warn("There is already a helper for channel {0} registered.", e, channelId);
                             }
                         }
-
-                        if (listener.ID.ListenerID.ID == "DynamicExecutor")
+                        else if(ilcMsg.Type == AbstractChangedMessage.EChangeType.REMOVED)
                         {
-                            MidiPlugin.log.Info("Dynamic Executors detected...");
-                            var mtd = listener;
-                            if (mtd.Name == "Fader")
+                            MidiBacktrackHelper mbh;
+                            if(!helperList.TryGetValue(channelId, out mbh))
                             {
-                                MidiPlugin.log.Debug("Link to dynamic Fader detected.");
-                                var dynExc = ewHelper.GetDynamicExecutorByMetadata(mtd);
-                                if (dynExc != null)
-                                {
-                                    MidiBacktrackHelper helper;
-                                    if (!helperList.TryGetValue(channel.ID.ChannelID, out helper))
-                                    {
-                                        helper = new MidiBacktrackHelper(channel as MidiRangeInputChannel, dynExc);
-                                        helperList.Add(channel.ID.ChannelID, helper);
-                                        created++;
-                                        MidiPlugin.log.Info("Link to dynamic executor {0} established.", mtd.Parent.Name);
-                                    }
-                                    helper.current = true;
-                                    if (!helper.registered)
-                                        helper.Register();
-                                }
+                                MidiPlugin.log.Warn("Could not fetch helper for ChannelID {0}", channelId);
+                                return;
                             }
+                            mbh.Unregister();
+                            helperList.Remove(channelId);
                         }
                     }
-                }
 
-
-                var x = helperList.Where(j => !j.Value.current);
-                x.ForEach(j => { if (j.Value.registered) j.Value.Unregister(); });
-                var y = x.ToArray();
-                foreach (var item in y)
-                {
-                    helperList.Remove(item.Key);
-                    removed++;
-                }
-                MidiPlugin.log.Info("LinkChangedHandler finished, {0} added, {1} removed", created, removed);
-            }
-            catch(Exception ex)
-            {
-                MidiPlugin.log.Error("Error in LinkChangedHandler... ", ex);
+                    break;
+                case "DynamicExecutor":
+                    var dynamicExecutor = ewHelper.GetDynamicExecutorByMetadata(listener);
+                    if (dynamicExecutor == null)
+                    {
+                        MidiPlugin.log.Warn("DynamicExecutor {0} does not exist, but is linked.", listener.Parent.ID.MetadataID);
+                        return;
+                    }
+                    if (listener.Name == "Fader")
+                    {
+                        //Link to executor fader
+                        if (ilcMsg.Type == AbstractChangedMessage.EChangeType.ADDED)
+                        {
+                            try
+                            {
+                                var mbh = new MidiBacktrackHelper(channel as MidiInputChannel, dynamicExecutor);
+                                helperList.Add(channelId, mbh);
+                                mbh.Register();
+                            }
+                            catch (Exception e)
+                            {
+                                MidiPlugin.log.Warn("There is already a helper for channel {0} registered.", e, channelId);
+                            }
+                        }
+                        else if (ilcMsg.Type == AbstractChangedMessage.EChangeType.REMOVED)
+                        {
+                            MidiBacktrackHelper mbh;
+                            if (!helperList.TryGetValue(channelId, out mbh))
+                            {
+                                MidiPlugin.log.Warn("Could not fetch helper for ChannelID {0}", channelId);
+                                return;
+                            }
+                            mbh.Unregister();
+                            helperList.Remove(channelId);
+                        }
+                    }
+                    break;
             }
         }
 
         private class MidiBacktrackHelper
         {
-            private MidiRangeInputChannel channel;
+            private MidiInputChannel channel;
             private Lumos.GUI.Facade.Executor.IExecutorFacade executor;
             private ExecutorWindowHelper.DynamicExecutor dynExec;
             private bool isDynamic = false;
-            public MidiBacktrackHelper(MidiRangeInputChannel chan, Lumos.GUI.Facade.Executor.IExecutorFacade executor)
+            public MidiBacktrackHelper(MidiInputChannel chan, Lumos.GUI.Facade.Executor.IExecutorFacade executor)
             {
                 this.channel = chan;
                 this.executor = executor;
             }
 
-            public MidiBacktrackHelper(MidiRangeInputChannel chan, ExecutorWindowHelper.DynamicExecutor dynExc)
+            public MidiBacktrackHelper(MidiInputChannel chan, ExecutorWindowHelper.DynamicExecutor dynExc)
             {
                 dynExec = dynExc;
                 isDynamic = true;
@@ -156,7 +179,8 @@ namespace MidiPlugin.Utilities
 
             private void HandlerFunc(object sender, double val)
             {
-                try {
+                try
+                {
                     channel.UpdateBacktrackValue(val);
                 }
                 catch(Exception ex)
@@ -166,7 +190,7 @@ namespace MidiPlugin.Utilities
             }
 
             public bool registered;
-            public bool current = false;
         }
+
     }
 }

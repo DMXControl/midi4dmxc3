@@ -494,23 +494,6 @@ namespace MidiPlugin.Utilities
             
         }
 
-        //internal void DeregisterSettings()
-        //{
-        //    var settings = SettingsManager.getInstance();
-        //    for (int i = 0; i < dynExecutors.Length; i++)
-        //    {
-        //        SettingsMetadata mt;
-        //
-        //        settings.registerGuiSetting(new SettingsMetadata(ESettingsRegisterType.APPLICATION, "Executor", null, "Dynamic Executor " + (i + 1) + ": Tolerance", "MidiPlugin", "MPL.EXECFG" + i, "", null)
-        //        {
-        //            MinDouble = 0,
-        //            MaxDouble = 1,
-        //            
-        //        }, dynExecutors[i].Tolerance);
-        //        
-        //    }
-        //    settings.GUISettingChanged -= HandleSettingChanged;
-        //}
         public void HandleSettingChanged(object sender, SettingChangedEventArgs args)
         {
             MidiPlugin.log.Info("SettingChanged: {0}, NewValue: {1}, Type:{2}", args.PropertyName, args.NewValue, args.Type);

@@ -89,7 +89,6 @@
     </Compile>
     <Compile Include="MidiPlugin\Utilities\ExecutorWindowHelper.cs" />
     <Compile Include="MidiPlugin\Utilities\Extensions.cs" />
-    <Compile Include="MidiPlugin\Utilities\InputLayerManagementHelper.cs" />
     <Compile Include="MidiPlugin\Utilities\LinkChangedHandler.cs" />
     <Compile Include="MidiPlugin\ValueChangedEventArgs.cs" />
     <Compile Include="MidiPlugin\ValueTypeTypeConverter.cs" />

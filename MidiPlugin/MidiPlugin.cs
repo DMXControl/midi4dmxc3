@@ -18,8 +18,6 @@ namespace MidiPlugin
 {
     public class MidiPlugin : GuiPluginBase, IMessageListener
     {
-        public org.dmxc.lumos.Kernel.Input.IInputLayerManager interfacedILM;
-        public Type interfacedILMType;
         internal static readonly ILumosLog log = LumosLogger.getInstance(typeof(MidiPlugin));
         private static readonly LumosResourceMetadata myMetaData = new LumosResourceMetadata("MidiSettings.xml", ELumosResourceType.MANAGED_TREE);
         private static readonly LumosResourceMetadata metadata2 = new LumosResourceMetadata("MidiPlugin.Config.xml", ELumosResourceType.MANAGED_TREE);
@@ -29,6 +27,7 @@ namespace MidiPlugin
         private AssemblyHelper asmh;
         private Utilities.ExecutorWindowHelper ewHelper;
         private Utilities.LinkChangedHandler lch;
+        private bool projectLoaded = false;
         public MidiPlugin() : base("{2E9C6D8E-431E-4d24-965C-AC4080C25CBA}", "Midi Plugin")
         {
         }
@@ -53,6 +52,8 @@ namespace MidiPlugin
         {
             try
             {
+                if (ConnectionManager.getInstance().Connected)
+                    Load();
                 log.Debug("Startup MidiPlugin!");
                 ConnectionManager.getInstance().registerMessageListener(this, "KernelInputLayerManager", "LinkChanged");
                 ConnectionManager.getInstance().registerMessageListener(this, "ExecutorManager", "OnExecutorChanged");
@@ -71,10 +72,6 @@ namespace MidiPlugin
                 {
                     log.Info("No configuration found.");
                 }
-                //var pemgr = PEManager.getInstance();
-                //var settingsBranch = pemgr.GetBranchByID(SettingsManager.getInstance().GetSettignsBranchID()) as SettingsBranch;
-                //ConfigurableSettingsNode midiPluginNode = new ConfigurableSettingsNode("Settings:MidiPlugin", "MidiPlugin", "preferences");
-                //settingsBranch.AddRecursive(settingsBranch.ID, midiPluginNode);
                 SettingsManager.getInstance().SettingChanged += ewHelper.HandleSettingChanged;
             }
             catch (Exception ex)
@@ -113,6 +110,7 @@ namespace MidiPlugin
         {
             try
             {
+                if (projectLoaded) Close();
                 log.Debug("Shutdown MidiPlugin!");
                 this.devices.Stop();
                 ConnectionManager.getInstance().deregisterMessageListener(this, "KernelInputLayerManager", "LinkChanged");
@@ -147,45 +145,42 @@ namespace MidiPlugin
             log.Debug("LoadProject in MidiPlugin");
             base.loadProject(context);
             this.Load();
-            lch.Update(ewHelper);
+            //lch.Update(ewHelper);
         }
         public override void closeProject(LumosGUIIOContext context)
         {
             if (!ConnectionManager.getInstance().Connected) return;
+            log.Debug("CloseProject in MidiPlugin");
             base.closeProject(context);
             this.Close();
         }
         public override void connectionClosing()
         {
-            this.Save();
-            this.Close();
+            log.Debug("Connection closing in MidiPlugin...");
 
             ewHelper.Cleanup();
-            lch.Update(ewHelper);
             base.connectionClosing();
         }
         public override void connectionEstablished()
         {
-            this.Load();
-
+            log.Debug("Connection established in MidiPlugin...");
 
             ewHelper.Establish();
-            lch.Update(ewHelper);
             base.connectionEstablished();
         }
         private void Close()
         {
+            lch.Clear();
             List<RuleSet> rules = new List<RuleSet>(this.midi.RuleSets);
             foreach (RuleSet item in rules)
             {
                 this.midi.RuleSets.Remove(item);
             }
-
+            projectLoaded = false;
         }
         private void Load()
 
         {
-            this.Close();
             if (ResourceManager.getInstance().existsResource(EResourceType.PROJECT, MidiPlugin.myMetaData))
             {
                 LumosResource r = ResourceManager.getInstance().loadResource(EResourceAccess.READ_WRITE, EResourceType.PROJECT, MidiPlugin.myMetaData);
@@ -198,6 +193,7 @@ namespace MidiPlugin
                         this.midi.RuleSets.Add(rs);
                     }
                 }
+                projectLoaded = true;
             }
         }
         private void Save()
@@ -258,7 +254,8 @@ namespace MidiPlugin
             //log.Info("OnMessage {0}", message.GetType().Name);
             var msg = message as InputLinkChangedMessage;
             if (msg != null)
-                lch.Update(ewHelper);
+                
+                lch.Update(ewHelper, msg);
         }
 
         #endregion
