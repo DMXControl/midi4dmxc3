@@ -53,57 +53,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MidiPlugin\AssemblyHelper.cs" />
-    <Compile Include="MidiPlugin\ButtonInputChannel.cs" />
-    <Compile Include="MidiPlugin\ButtonRule.cs" />
-    <Compile Include="MidiPlugin\ContextManager.cs" />
-    <Compile Include="MidiPlugin\DeviceId.cs" />
-    <Compile Include="MidiPlugin\DeviceInformation.cs" />
-    <Compile Include="MidiPlugin\DeviceRule.cs" />
-    <Compile Include="MidiPlugin\EDeviceType.cs" />
-    <Compile Include="MidiPlugin\EncoderRule.cs" />
-    <Compile Include="MidiPlugin\IBacktrack.cs" />
-    <Compile Include="MidiPlugin\ILearnable.cs" />
-    <Compile Include="MidiPlugin\IProcessable.cs" />
-    <Compile Include="MidiPlugin\ISave.cs" />
-    <Compile Include="MidiPlugin\MidiDev.cs" />
-    <Compile Include="MidiPlugin\MidiEventArgs.cs" />
-    <Compile Include="MidiPlugin\MidiForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MidiPlugin\MidiInformation.cs" />
-    <Compile Include="MidiPlugin\MidiInput.cs" />
-    <Compile Include="MidiPlugin\MidiInputChannel.cs" />
-    <Compile Include="MidiPlugin\MidiInputLayer.cs" />
-    <Compile Include="MidiPlugin\MidiMessage.cs" />
-    <Compile Include="MidiPlugin\MidiOutput.cs" />
     <Compile Include="MidiPlugin\MidiPlugin.cs" />
-    <Compile Include="MidiPlugin\MidiRangeInputChannel.cs" />
-    <Compile Include="MidiPlugin\RuleSet.cs" />
-    <Compile Include="MidiPlugin\RuleSetEditForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MidiPlugin\SliderRule.cs" />
-    <Compile Include="MidiPlugin\ToolStripDeviceRuleButton.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="MidiPlugin\Utilities\ExecutorWindowHelper.cs" />
     <Compile Include="MidiPlugin\Utilities\Extensions.cs" />
     <Compile Include="MidiPlugin\Utilities\LinkChangedHandler.cs" />
-    <Compile Include="MidiPlugin\ValueChangedEventArgs.cs" />
-    <Compile Include="MidiPlugin\ValueTypeTypeConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MidiPlugin\MidiForm.resx">
-      <DependentUpon>MidiForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MidiPlugin\RuleSetEditForm.resx">
-      <DependentUpon>RuleSetEditForm.cs</DependentUpon>
-    </EmbeddedResource>
+    <ProjectReference Include="MidiPlugin.Rules\MidiPlugin.Rules.csproj">
+      <Project>{8198e18c-2428-4cc1-9453-d14f08fea217}</Project>
+      <Name>MidiPlugin.Rules</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetDir)$(TargetFileName)" "C:\Program Files (x86)\DMXControl3\GUI\Plugins"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(TargetFileName)" "C:\Program Files (x86)\DMXControl3\GUI\Plugins"
+</PostBuildEvent>
   </PropertyGroup>
 </Project>

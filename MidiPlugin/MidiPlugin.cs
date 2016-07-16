@@ -1,4 +1,5 @@
 using Lumos.GUI;
+using Lumos.GUI.AssemblyScan;
 using Lumos.GUI.Connection;
 using Lumos.GUI.Plugin;
 using Lumos.GUI.Resource;
@@ -7,6 +8,7 @@ using Lumos.GUI.Settings;
 using Lumos.GUI.Settings.PE;
 using Lumos.GUI.Windows;
 using LumosLIB.Kernel.Log;
+using org.dmxc.lumos.Kernel.AssemblyScan;
 using org.dmxc.lumos.Kernel.Messaging.Listener;
 using org.dmxc.lumos.Kernel.Messaging.Message;
 using org.dmxc.lumos.Kernel.Resource;
@@ -18,7 +20,7 @@ namespace MidiPlugin
 {
     public class MidiPlugin : GuiPluginBase, IMessageListener
     {
-        internal static readonly ILumosLog log = LumosLogger.getInstance(typeof(MidiPlugin));
+        internal static readonly ILumosLog log = LumosLogger.getInstance(typeof(MidiPluginLog));
         private static readonly LumosResourceMetadata myMetaData = new LumosResourceMetadata("MidiSettings.xml", ELumosResourceType.MANAGED_TREE);
         private static readonly LumosResourceMetadata metadata2 = new LumosResourceMetadata("MidiPlugin.Config.xml", ELumosResourceType.MANAGED_TREE);
         private MidiForm form;

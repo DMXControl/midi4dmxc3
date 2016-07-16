@@ -158,7 +158,7 @@ namespace MidiPlugin
 
         public override void Save(org.dmxc.lumos.Kernel.Resource.ManagedTreeItem i)
         {
-            MidiPlugin.log.Debug("Saving SliderRule {0}, {1},  {2}", SliderMessage.Data, MaximumBacktrack.Data, MinimumBacktrack.Data);
+            ContextManager.log.Debug("Saving SliderRule {0}, {1},  {2}", SliderMessage.Data, MaximumBacktrack.Data, MinimumBacktrack.Data);
             base.Save(i);
             i.setValue<double>("Value", this.Value);
             i.setValue<int>("Message", this.SliderMessage.Data);

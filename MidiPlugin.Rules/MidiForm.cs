@@ -66,6 +66,8 @@ namespace MidiPlugin
 		}
 		private void HandleRulesDoubleClick(object s, DataGridViewCellEventArgs e)
 		{
+            if (e.RowIndex == -1)
+                return;
 			RuleSet rs = ContextManager.MidiInformation.RuleSets[e.RowIndex];
 			rs.OpenEditWindow();
 		}

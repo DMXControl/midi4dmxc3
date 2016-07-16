@@ -336,7 +336,7 @@ namespace MidiPlugin
 		}
 		private void AddRule(Type t)
 		{
-			DeviceRule r = this.rules.createRule(t);
+			DeviceRule r = this.rules.createRule(t.FullName);
 			if (r != null)
 			{
 				this.rules.AddRule(r);

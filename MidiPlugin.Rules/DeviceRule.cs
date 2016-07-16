@@ -78,13 +78,17 @@ namespace MidiPlugin
         public static DeviceRule Load(RuleSet r, ManagedTreeItem item)
         {
             DeviceRule result;
-            if (!item.hasValue<Type>("Type"))
+            if (!item.hasValue<string>("Type") && !item.hasValue<Type>("Type"))
             {
                 result = null;
             }
             else
             {
-                Type type = item.getValue<Type>("Type");
+                string type = "";
+                if (item.hasValue<string>("Type"))
+                    type = item.getValue<string>("Type");
+                else
+                    type = item.getValue<Type>("Type").FullName; //Backward compat.
                 DeviceRule o = r.createRule(type);
                 if (o == null)
                 {
@@ -126,7 +130,7 @@ namespace MidiPlugin
         public virtual void Save(ManagedTreeItem i)
         {
             Type type = base.GetType();
-            i.setValue<Type>("Type", type);
+            i.setValue<string>("Type", type.FullName);
             i.setValue<string>("Name", this.Name);
             i.setValue<string>("GUID", this.GUID);
             i.setValue<bool>("UseBacktrack", this.UseBacktrack);

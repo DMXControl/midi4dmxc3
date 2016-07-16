@@ -155,7 +155,7 @@ namespace MidiPlugin
 		}
 		public void Save(ManagedTreeItem mti)
 		{
-            MidiPlugin.log.Debug("Saving RuleSet {0}", Name);
+            ContextManager.log.Debug("Saving RuleSet {0}", Name);
 			mti.setValue<string>("Name", this.Name);
 			mti.setValue<string>("InputDeviceID", this.InputDeviceID);
 			mti.setValue<string>("OutputDeviceID", this.OutputDeviceID);
@@ -179,7 +179,7 @@ namespace MidiPlugin
                 }
                 catch(Exception)
                 {
-                    MidiPlugin.log.Warn("Error sending Midi Message to device {0}, message: {1}.{2}, {3},{4}", OutputDevice.DeviceID, m.m.channel, m.m.message, m.m.data1, m.m.data2);
+                    ContextManager.log.Warn("Error sending Midi Message to device {0}, message: {1}.{2}, {3},{4}", OutputDevice.DeviceID, m.m.channel, m.m.message, m.m.data1, m.m.data2);
                 }
 				this.OutputUsed = false;
 			}
@@ -209,9 +209,13 @@ namespace MidiPlugin
 				item.Process(e.m);
 			}
 		}
-		public DeviceRule createRule(Type t)
+		public DeviceRule createRule(string t)
 		{
-			return Activator.CreateInstance(t) as DeviceRule;
+            var type = ContextManager.AssemblyHelper.DeviceRuleTypes.FirstOrDefault(j => j.FullName == t);
+            if (type == null) return null;
+            var obj = Activator.CreateInstance(type) as DeviceRule;
+
+            return obj;
 		}
 		public void AddRule(DeviceRule r)
 		{

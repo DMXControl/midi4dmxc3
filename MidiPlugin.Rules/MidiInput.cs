@@ -44,7 +44,7 @@ namespace MidiPlugin
             }
             catch(Exception ex)
             {
-                MidiPlugin.log.Error("Error processing incoming midi message", ex);
+                ContextManager.log.Error("Error processing incoming midi message", ex);
             }
 		}
 		protected void OnMessageReceived(MidiMessage m)

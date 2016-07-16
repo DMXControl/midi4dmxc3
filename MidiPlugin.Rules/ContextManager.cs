@@ -1,7 +1,8 @@
+using LumosLIB.Kernel.Log;
 using System;
 namespace MidiPlugin
 {
-	internal static class ContextManager
+	internal static class ContextManager 
 	{
 		private static MidiInformation info;
 		private static DeviceInformation dev;
@@ -56,5 +57,21 @@ namespace MidiPlugin
 			get;
 			set;
 		}
+
+        public static ILumosLog log
+        {
+            get;
+            set;
+        }
+
+        static ContextManager()
+        {
+            log = LumosLogger.getInstance(typeof(MidiPluginLog));
+        }
 	}
+
+    public class MidiPluginLog
+    {
+
+    }
 }

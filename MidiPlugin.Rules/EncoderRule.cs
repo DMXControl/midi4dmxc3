@@ -125,7 +125,7 @@ namespace MidiPlugin
 		public override void Save(ManagedTreeItem i)
 		{
 
-            MidiPlugin.log.Debug("Saving EncoderRule {0}, {1},  {2}", CWMessage.Data, CCWMessage.Data, Increment);
+            ContextManager.log.Debug("Saving EncoderRule {0}, {1},  {2}", CWMessage.Data, CCWMessage.Data, Increment);
 			base.Save(i);
 			i.setValue<double>("Value", this.Value);
 			i.setValue<double>("Increment", this.Increment);

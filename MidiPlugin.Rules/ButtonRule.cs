@@ -240,7 +240,7 @@ namespace MidiPlugin
 		}
 		public override void Save(ManagedTreeItem i)
 		{
-            MidiPlugin.log.Debug("Saving ButtonRule {0}, {1},  {2}", EnableMessage.Data, DisableMessage.Data, Treshold);
+            ContextManager.log.Debug("Saving ButtonRule {0}, {1},  {2}", EnableMessage.Data, DisableMessage.Data, Treshold);
 			base.Save(i);
 			i.setValue<bool>("State", this.State);
 			i.setValue<byte>("Treshold", this.Treshold);

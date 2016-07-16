@@ -3,18 +3,22 @@ using org.dmxc.lumos.Kernel.AssemblyScan;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 namespace MidiPlugin
 {
 	public class AssemblyHelper : IAssemblyListener
 	{
 		public List<Type> DeviceRuleTypes = new List<Type>();
 		public AssemblyHelper()
-		{
-			AssemblyManager.getInstance().registerAssemblyListener(this);
+        {
+            AssemblyManager.getInstance().registerAssemblyListener(this);
 			ContextManager.AssemblyHelper = this;
+            foreach (var t in GetType().Assembly.GetTypes())
+                scanNewType(t);
 		}
 		public void scanNewType(Type t)
 		{
+            ContextManager.log.Debug("Scanning type {0}", t.FullName);
 			if (t.IsClass && !t.IsAbstract && typeof(DeviceRule).IsAssignableFrom(t))
 			{
 				this.DeviceRuleTypes.Add(t);
@@ -35,15 +39,6 @@ namespace MidiPlugin
             return t.Name;
         }
 	}
-
-    public class FriendlyNameAttribute : Attribute
-    {
-        public string Name { get; set; }
-        public FriendlyNameAttribute(string Name)
-        {
-            this.Name = Name;
-        }
-    }
 
 
 }
