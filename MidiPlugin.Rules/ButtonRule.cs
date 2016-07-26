@@ -170,7 +170,7 @@ namespace MidiPlugin
 			{
 				if (this.IsToggle)
 				{
-					if (m.EqualsSimple(this.EnableMessage))
+					if ((m.EqualsSimple(this.EnableMessage) && m.data2 > this.Treshold) || m == this.EnableMessage)
 					{
 						this.State = false;
 					}
