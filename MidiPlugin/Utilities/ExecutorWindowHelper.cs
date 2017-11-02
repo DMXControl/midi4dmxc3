@@ -487,8 +487,8 @@ namespace MidiPlugin.Utilities
             {
                 settings.registerGuiSetting(new SettingsMetadata(ESettingsRegisterType.APPLICATION, "Executor", null, "Dynamic Executor " + (i + 1) + ": Tolerance", "MPL.EXECFG" + i, "", null)
                 {
-                    MinDouble = 0,
-                    MaxDouble = 1
+                    Min = 0,
+                    Max = 1
                 }, dynExecutors[i].Tolerance);
             }
             
