@@ -31,7 +31,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup>
-    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="LumosGUI">
@@ -67,7 +67,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetDir)$(TargetFileName)" "C:\Program Files (x86)\DMXControl3\GUI\Plugins"
-</PostBuildEvent>
+    <PostBuildEvent>FOR /F "skip=2 tokens=2,*" %25%25A IN ('reg.exe query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\Lumos.exe" /v ""') DO set "DMXCRF=%25%25B"
+copy /Y "$(TargetDir)$(TargetFileName)" "%25DMXCRF%25\GUI\Plugins"</PostBuildEvent>
   </PropertyGroup>
 </Project>

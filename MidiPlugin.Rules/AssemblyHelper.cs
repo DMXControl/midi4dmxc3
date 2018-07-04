@@ -9,7 +9,10 @@ namespace MidiPlugin
 	public class AssemblyHelper : IAssemblyListener
 	{
 		public List<Type> DeviceRuleTypes = new List<Type>();
-		public AssemblyHelper()
+
+        public Type[] ListeningTypes => DeviceRuleTypes.ToArray();
+
+        public AssemblyHelper()
         {
             AssemblyManager.getInstance().registerAssemblyListener(this);
 			ContextManager.AssemblyHelper = this;
