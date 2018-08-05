@@ -167,6 +167,9 @@ namespace MidiPlugin
         {
             log.Debug("Connection established in MidiPlugin...");
 
+            if (ConnectionManager.getInstance().Connected)
+                Load();
+
             ewHelper.Establish();
             base.connectionEstablished();
         }

@@ -22,7 +22,8 @@ namespace MidiPlugin
         private ToolStripMenuItem toolsToolStripMenuItem;
         private ToolStripMenuItem exportRuleSetsToolStripMenuItem;
         private ToolStripMenuItem importRuleSetsToolStripMenuItem;
-		private ToolStripMenuItem infoToolStripMenuItem;
+        private ToolStripMenuItem updateDevicesToolStripMenuItem;
+        private ToolStripMenuItem infoToolStripMenuItem;
 		public MidiForm()
 		{
 			this.InitializeComponent();
@@ -140,6 +141,7 @@ namespace MidiPlugin
             this.devicesGrid = new System.Windows.Forms.DataGridView();
             this.rulesGrp = new System.Windows.Forms.GroupBox();
             this.rulesGrid = new System.Windows.Forms.DataGridView();
+            this.updateDevicesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.splitContainer.Panel1.SuspendLayout();
             this.splitContainer.Panel2.SuspendLayout();
@@ -155,6 +157,7 @@ namespace MidiPlugin
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addRuleSetToolStripMenuItem,
             this.deleteRuleSetToolStripMenuItem,
+            this.updateDevicesToolStripMenuItem,
             this.infoToolStripMenuItem,
             this.toolsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
@@ -203,6 +206,13 @@ namespace MidiPlugin
             this.importRuleSetsToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.importRuleSetsToolStripMenuItem.Text = "Import RuleSets";
             this.importRuleSetsToolStripMenuItem.Click += new System.EventHandler(this.importRuleSetsToolStripMenuItem_Click);
+            // 
+            // updateDevicesToolStripMenuItem
+            // 
+            this.updateDevicesToolStripMenuItem.Name = "updateDevicesToolStripMenuItem";
+            this.updateDevicesToolStripMenuItem.Size = new System.Drawing.Size(100, 20);
+            this.updateDevicesToolStripMenuItem.Text = "Update Devices";
+            this.updateDevicesToolStripMenuItem.Click += new System.EventHandler(this.updateDevicesToolStripMenuItem_Click);
             // 
             // splitContainer
             // 
@@ -286,6 +296,7 @@ namespace MidiPlugin
             this.menuStrip1.PerformLayout();
             this.splitContainer.Panel1.ResumeLayout(false);
             this.splitContainer.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).EndInit();
             this.splitContainer.ResumeLayout(false);
             this.devicesGrp.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.devicesGrid)).EndInit();
@@ -310,5 +321,12 @@ namespace MidiPlugin
             if (Import != null) Import(null, null);
         }
 
-	}
+        private void updateDevicesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ContextManager.DeviceInformation.DeviceUpdate();
+            this.devicesGrid.DataSource = typeof(System.Collections.Generic.List<MidiDev>);
+            this.devicesGrid.DataSource = ContextManager.DeviceInformation.Devices;
+            this.UpdateUi();
+        }
+    }
 }

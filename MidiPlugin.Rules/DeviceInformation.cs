@@ -42,33 +42,75 @@ namespace MidiPlugin
 				d.Stop();
 			}
 		}
+
+        private void DeviceAdd()
+        {
+            this.InputDevices = new BindingList<MidiInput>();
+            this.OutputDevices = new BindingList<MidiOutput>();
+
+            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+            {
+                try
+                {
+                    this.InputDevices.Add(new MidiInput(i));
+                }
+                catch (Exception e)
+                {
+                    DeviceInformation.log.Warn("Error initializing Midi-In Device", e, new object[0]);
+                }
+            }
+            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+            {
+                try
+                {
+                    this.OutputDevices.Add(new MidiOutput(i));
+                }
+                catch (Exception e)
+                {
+                    DeviceInformation.log.Warn("Error initializing Midi-Out Device", e, new object[0]);
+                }
+            }
+        }
+
+        private void DeviceDispose()
+        {
+            foreach (MidiInput item in this.InputDevices)
+            {
+                try
+                {
+                    item.Dispose();
+                }
+                catch (Exception e)
+                {
+                    DeviceInformation.log.Warn("Midi-In Device could not be disposed", e, new object[0]);
+                }
+            }
+            foreach (MidiOutput item2 in this.OutputDevices)
+            {
+                try
+                {
+                    item2.OutputDevice.Dispose();
+                }
+                catch (Exception e)
+                {
+                    DeviceInformation.log.Warn("Midi-Out Device could not be disposed", e, new object[0]);
+                }
+            }
+
+            this.InputDevices = null;
+            this.OutputDevices = null;
+        }
+
+        public void DeviceUpdate()
+        {
+            this.DeviceDispose();
+            this.DeviceAdd();
+        }
+
 		public DeviceInformation()
 		{
 			ContextManager.DeviceInformation = this;
-			this.InputDevices = new BindingList<MidiInput>();
-			this.OutputDevices = new BindingList<MidiOutput>();
-			for (int i = 0; i < MidiIn.NumberOfDevices; i++)
-			{
-				try
-				{
-					this.InputDevices.Add(new MidiInput(i));
-				}
-				catch (Exception e)
-				{
-					DeviceInformation.log.Warn("Error initializing Midi-In Device", e, new object[0]);
-				}
-			}
-			for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-			{
-				try
-				{
-					this.OutputDevices.Add(new MidiOutput(i));
-				}
-				catch (Exception e)
-				{
-					DeviceInformation.log.Warn("Error initializing Midi-Out Device", e, new object[0]);
-				}
-			}
+            this.DeviceAdd();
 		}
 		public void Dispose()
 		{
@@ -78,16 +120,8 @@ namespace MidiPlugin
 				if (!this.disposed)
 				{
 					this.disposed = true;
-					foreach (MidiInput item in this.InputDevices)
-					{
-						item.Dispose();
-					}
-					foreach (MidiOutput item2 in this.OutputDevices)
-					{
-						item2.OutputDevice.Dispose();
-					}
-					this.InputDevices = null;
-					this.OutputDevices = null;
+
+                    this.DeviceDispose();
 				}
 			}
 			finally
