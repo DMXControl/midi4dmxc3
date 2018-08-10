@@ -222,6 +222,10 @@ namespace MidiPlugin.Utilities
         }
         public const int ExecutorWindow_MaxExecutors = 8;
         public const string ExecutorWindow_ListenerId = "{CA528EAA-2768-498F-AF76-4F8D5F85E5D9}";
+
+        List<string> executorIds = new List<string>();
+        
+        /*
         static string[] executorIds = {
                                           "{85EB4AF4-32BF-4246-8CEF-C5CA66C6C90F}",
                                           "{DCF4CD04-061D-4DC5-96F1-932EAF9C1451}",
@@ -232,10 +236,16 @@ namespace MidiPlugin.Utilities
                                           "{A0A1DFE4-9AFD-4DFB-A2DA-35DCA0B927FC}",
                                           "{037D0678-A050-478F-8667-9586F56BF8C5}",
                                       };
+        */
 
         DynamicExecutor[] dynExecutors;
         public ExecutorWindowHelper()
         {
+
+
+            for (int i = 0; i < ExecutorWindow_MaxExecutors; i++) {
+                executorIds.Add("dynExecutorID_" + i);
+            }
             dynExecutors = executorIds.Select(j => new DynamicExecutor { GUID = j, Tolerance = 0.07, IsModifierKeyPressed = () => { return modifierKey; } }).ToArray();
         }
         private bool modifierKey;
