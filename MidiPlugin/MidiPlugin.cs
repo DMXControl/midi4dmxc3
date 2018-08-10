@@ -28,7 +28,8 @@ namespace MidiPlugin
         private MidiInformation midi;
         private AssemblyHelper asmh;
         private Utilities.ExecutorWindowHelper ewHelper;
-        private Utilities.LinkChangedHandler lch;
+//      Commented because of a bug in the Input Assignment of DMXControl 3.1(ListenerID is not unique)
+//      private Utilities.LinkChangedHandler lch;
         private bool projectLoaded = false;
         public MidiPlugin() : base("{2E9C6D8E-431E-4d24-965C-AC4080C25CBA}", "Midi Plugin")
         {
@@ -42,7 +43,8 @@ namespace MidiPlugin
                 this.asmh = new AssemblyHelper();
                 this.devices = new DeviceInformation();
                 this.midi = new MidiInformation();
-                this.lch = new Utilities.LinkChangedHandler(this.midi);
+//              Commented because of a bug in the Input Assignment of DMXControl 3.1(ListenerID is not unique)
+//              this.lch = new Utilities.LinkChangedHandler(this.midi);
                 ewHelper.RegisterSettings();
             }
             catch (Exception ex)
@@ -175,7 +177,8 @@ namespace MidiPlugin
         }
         private void Close()
         {
-            lch.Clear();
+ //         Commented because of a bug in the Input Assignment of DMXControl 3.1(ListenerID is not unique)
+ //         lch.Clear();
             List<RuleSet> rules = new List<RuleSet>(this.midi.RuleSets);
             foreach (RuleSet item in rules)
             {
@@ -256,11 +259,13 @@ namespace MidiPlugin
 
         public void onMessage(org.dmxc.lumos.Kernel.Messaging.Message.IMessage message)
         {
-            //log.Info("OnMessage {0}", message.GetType().Name);
-            var msg = message as InputLinkChangedMessage;
-            if (msg != null)
-                
-                lch.Update(ewHelper, msg);
+            // Commented because of a bug in the Input Assignment of DMXControl 3.1 (ListenerID is not unique)
+            /*
+                //log.Info("OnMessage {0}", message.GetType().Name);
+                var msg = message as InputLinkChangedMessage;
+                if (msg != null)
+                    lch.Update(ewHelper, msg);
+            */
         }
 
         #endregion
