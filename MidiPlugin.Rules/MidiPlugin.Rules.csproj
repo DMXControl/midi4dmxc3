@@ -38,7 +38,7 @@
       <HintPath>..\references\LumosLIB.dll</HintPath>
     </Reference>
     <Reference Include="NAudio">
-      <HintPath>..\External\NAudio.dll</HintPath>
+      <HintPath>..\Externals\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
