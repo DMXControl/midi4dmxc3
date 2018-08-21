@@ -35,13 +35,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="LumosGUI">
-      <HintPath>..\..\..\..\..\Program Files (x86)\DMXControl3\GUI\LumosGUI.exe</HintPath>
+      <HintPath>.\LumosGUI.exe</HintPath>
     </Reference>
     <Reference Include="LumosLIB">
-      <HintPath>..\..\..\..\..\Program Files (x86)\DMXControl3\GUI\LumosLIB.dll</HintPath>
-    </Reference>
-    <Reference Include="NAudio">
-      <HintPath>Externals\NAudio.dll</HintPath>
+      <HintPath>.\LumosLIB.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Windows.Forms" />
@@ -49,7 +46,7 @@
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WeifenLuo.WinFormsUI.Docking">
-      <HintPath>..\..\..\..\..\Program Files (x86)\DMXControl3\GUI\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
+      <HintPath>.\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
