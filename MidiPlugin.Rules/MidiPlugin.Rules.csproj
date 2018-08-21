@@ -32,13 +32,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="LumosGUI">
-      <HintPath>..\LumosGUI.exe</HintPath>
+      <HintPath>references\LumosGUI.exe</HintPath>
     </Reference>
     <Reference Include="LumosLIB">
-      <HintPath>..\LumosLIB.dll</HintPath>
+      <HintPath>references\LumosLIB.dll</HintPath>
     </Reference>
     <Reference Include="NAudio">
-      <HintPath>..\NAudio.dll</HintPath>
+      <HintPath>External\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -50,7 +50,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="WeifenLuo.WinFormsUI.Docking">
-      <HintPath>..\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
+      <HintPath>references\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

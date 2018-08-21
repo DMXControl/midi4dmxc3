@@ -35,10 +35,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="LumosGUI">
-      <HintPath>.\LumosGUI.exe</HintPath>
+      <HintPath>references\LumosGUI.exe</HintPath>
     </Reference>
     <Reference Include="LumosLIB">
-      <HintPath>.\LumosLIB.dll</HintPath>
+      <HintPath>references\LumosLIB.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Windows.Forms" />
@@ -46,7 +46,7 @@
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WeifenLuo.WinFormsUI.Docking">
-      <HintPath>.\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
+      <HintPath>references\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
