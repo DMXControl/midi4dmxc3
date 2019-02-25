@@ -12,6 +12,7 @@ using org.dmxc.lumos.Kernel.AssemblyScan;
 using org.dmxc.lumos.Kernel.Messaging.Listener;
 using org.dmxc.lumos.Kernel.Messaging.Message;
 using org.dmxc.lumos.Kernel.Resource;
+using org.dmxc.lumos.Kernel.Settings;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -43,10 +44,17 @@ namespace MidiPlugin
                 this.asmh = new AssemblyHelper();
                 this.devices = new DeviceInformation();
                 this.midi = new MidiInformation();
-//              Commented because of a bug in the Input Assignment of DMXControl 3.1(ListenerID is not unique)
-//              this.lch = new Utilities.LinkChangedHandler(this.midi);
-                ewHelper.RegisterSettings();
-            }
+                //              Commented because of a bug in the Input Assignment of DMXControl 3.1(ListenerID is not unique)
+                //              this.lch = new Utilities.LinkChangedHandler(this.midi);
+
+                //              Commented because DynExecutors will be created after connecting to the kernel
+                //              ewHelper.RegisterSettings();
+
+                SettingsManager.getInstance().registerSetting(
+                new SettingsMetadata(ESettingsRegisterType.BOTH, "GUI", new string[]{"Executors"} ,"DynExecutor MinCount",
+                    "MIDI Plugin", "DYN_EXECUTOR.MIN_DYNEXECUTORS_COUNT",
+                    "Here you can define the minimal count of the DynamicExecutors", null), 8);
+    }
             catch (Exception ex)
             {
                 log.Error("Error initializing plugin...", ex);
@@ -170,9 +178,10 @@ namespace MidiPlugin
             log.Debug("Connection established in MidiPlugin...");
 
             if (ConnectionManager.getInstance().Connected)
-                Load();
+                this.Load();
 
             ewHelper.Establish();
+            ewHelper.RegisterSettings();
             base.connectionEstablished();
         }
         private void Close()

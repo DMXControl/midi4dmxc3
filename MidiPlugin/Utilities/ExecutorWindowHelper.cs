@@ -18,6 +18,7 @@ using LumosLIB.GUI.Windows.Programmer;
 using Lumos.GUI.Windows.Programmer;
 using Lumos.GUI.Windows.SceneList;
 using org.dmxc.lumos.Kernel.Executor;
+using System.Collections.ObjectModel;
 
 namespace MidiPlugin.Utilities
 {
@@ -32,8 +33,8 @@ namespace MidiPlugin.Utilities
             internal Func<bool> IsModifierKeyPressed;
             internal ExecutorView executorWindow;
             private IExecutorFacade assignedExecutorInternal;
-            
-            
+
+
             public IExecutorFacade assignedExecutor { get { return assignedExecutorInternal; } set { Clear(); assignedExecutorInternal = value; Update(); } }
 
             private void Update()
@@ -148,12 +149,12 @@ namespace MidiPlugin.Utilities
                                 if (assignedExecutor != null)
                                     if (object.Equals(newValue, 1.0))
                                     {
-                                        if(WindowManager.getInstance().StoreActive)
+                                        if (WindowManager.getInstance().StoreActive)
                                         {
-                                            if(IsModifierKeyPressed() || assignedExecutor.HasOption(EExecutorOptions.SHOW__PROGRAMMER__FILTER))
+                                            if (IsModifierKeyPressed() || assignedExecutor.HasOption(EExecutorOptions.SHOW__PROGRAMMER__FILTER))
                                             {
                                                 ProgrammerFilterPredicate predicate;
-                                                if(ProgrammerFilter.ShowFilter(out predicate))
+                                                if (ProgrammerFilter.ShowFilter(out predicate))
                                                     assignedExecutor.storeProgrammerAtExecutor(assignedExecutor.SceneCount, predicate);
                                                 return false;
                                             }
@@ -220,34 +221,28 @@ namespace MidiPlugin.Utilities
             }
             public event FacadeChangedEvent<double> FaderValueChanged;
         }
-        public const int ExecutorWindow_MaxExecutors = 8;
+
+        public int ExecutorWindow_MaxExecutors { get; private set; }
+
+
         public const string ExecutorWindow_ListenerId = "{CA528EAA-2768-498F-AF76-4F8D5F85E5D9}";
 
         List<string> executorIds = new List<string>();
-        
-        /*
-        static string[] executorIds = {
-                                          "{85EB4AF4-32BF-4246-8CEF-C5CA66C6C90F}",
-                                          "{DCF4CD04-061D-4DC5-96F1-932EAF9C1451}",
-                                          "{28531BE2-159E-4529-A027-74782BC403C0}",
-                                          "{4EFF8773-30C6-4D70-AD65-5C7825516627}",
-                                          "{8C671F35-8974-41C2-9935-6F885D1FB2A9}",
-                                          "{4CD39110-8F32-40B0-BA46-0121F8247DEE}",
-                                          "{A0A1DFE4-9AFD-4DFB-A2DA-35DCA0B927FC}",
-                                          "{037D0678-A050-478F-8667-9586F56BF8C5}",
-                                      };
-        */
 
-        DynamicExecutor[] dynExecutors;
+        private readonly FacadeChangedEvent<ReadOnlyCollection<IGUIExecutor>> _executorListChangedHandler;
+
+        DynamicExecutor[] dynExecutors = null;
         public ExecutorWindowHelper()
         {
-
-
-            for (int i = 0; i < ExecutorWindow_MaxExecutors; i++) {
-                executorIds.Add("dynExecutorID_" + i);
-            }
-            dynExecutors = executorIds.Select(j => new DynamicExecutor { GUID = j, Tolerance = 0.07, IsModifierKeyPressed = () => { return modifierKey; } }).ToArray();
+            this._executorListChangedHandler = this._executorListChanged;
+            /*
+             for (int i = 0; i < ExecutorWindow_MaxExecutors; i++) {
+                 executorIds.Add("dynExecutorID_" + i);
+             }
+             dynExecutors = executorIds.Select(j => new DynamicExecutor { GUID = j, Tolerance = 0.07, IsModifierKeyPressed = () => { return modifierKey; } }).ToArray();
+             */
         }
+
         private bool modifierKey;
         public const string ExecutorWindow_PGUp = "{6ABAAF63-E751-4A8C-BF8F-4C0CFE52DFAC}";
         public const string ExecutorWindow_PGDn = "{668FBFEC-266E-4F7D-BD3B-ABD2562F31F8}";
@@ -262,6 +257,17 @@ namespace MidiPlugin.Utilities
 
         public void Establish()
         {
+            /*
+                        ExecutorWindow_MaxExecutors = ConnectionManager.getInstance().GuiSession.ExecutorPages.Max(x => x.GUIExecutors.Count);
+
+                        for (int i = 0; i < ExecutorWindow_MaxExecutors; i++)
+                        {
+                            executorIds.Add("dynExecutorID_" + i);
+                        }
+
+                        dynExecutors = executorIds.Select(j => new DynamicExecutor { GUID = j, Tolerance = 0.07, IsModifierKeyPressed = () => { return modifierKey; } }).ToArray();
+            */
+            ManageDynExecutors();
             //Cleanup();
             /* Einklinken in ExecutorWindow */
             ExecutorWindow = WindowManager.getInstance().GuiWindows.First(j => j.GetType() == typeof(ExecutorView)) as ExecutorView;
@@ -276,6 +282,13 @@ namespace MidiPlugin.Utilities
             ExecutorWindowListBox.SelectedIndexChanged += HandleCurrentExecutorPageChanged;
 
             MidiPlugin.log.Info("ExecutorWindow hook established.");
+
+            /* Add event listeners to react on changes in the ammount of executors on one page */
+            foreach (var item in ConnectionManager.getInstance().GuiSession.ExecutorPages)
+            {
+                item.ExecutorListChanged += _executorListChangedHandler;
+            }
+            ConnectionManager.getInstance().GuiSession.ExecutorPageChanged += HandleExecutorPageChanged;
 
             var currentItem = ExecutorWindowListBox.SelectedItem as ListBoxItem; /* Fetch current item */
             if (currentItem != null)
@@ -298,9 +311,31 @@ namespace MidiPlugin.Utilities
             if (ExecutorWindowListBox != null)
             {
                 ExecutorWindowListBox.SelectedIndexChanged -= HandleCurrentExecutorPageChanged;
-                ExecutorWindowListBox.SelectedValueChanged -=
-                    HandleCurrentExecutorPageChanged;
+                ExecutorWindowListBox.SelectedValueChanged -= HandleCurrentExecutorPageChanged;
             }
+
+
+            foreach (var item in ConnectionManager.getInstance().GuiSession.ExecutorPages)
+            {
+                try
+                {
+                    item.ExecutorListChanged -= _executorListChangedHandler;
+                }
+                catch (Exception)
+                {
+                    MidiPlugin.log.Info("ExecutorListChanged-Event not registered.");
+                }
+            }
+
+            try
+            {
+                ConnectionManager.getInstance().GuiSession.ExecutorPageChanged -= HandleExecutorPageChanged;
+            }
+            catch (Exception)
+            {
+                MidiPlugin.log.Info("HandleExecutorPageChanged not registered.");
+            }
+
             /* Einklinken in ExecutorWindow */
 
             MidiPlugin.log.Info("ExecutorWindow hook broken.");
@@ -338,6 +373,53 @@ namespace MidiPlugin.Utilities
             }
         }
 
+        private void HandleExecutorPageChanged(object sender, EventArgs e)
+        {
+            ManageDynExecutors();
+            MidiPlugin.log.Info("ExecutorPage changed.");
+        }
+
+        private void _executorListChanged(object sender, ReadOnlyCollection<IGUIExecutor> e)
+        {
+            ManageDynExecutors();
+            MidiPlugin.log.Info("Executor n ExecutorPage changed.");
+        }
+
+        private void ManageDynExecutors()
+        {
+            var executorInitCount = SettingsManager.getInstance().getSetting<int>(ESettingsType.PROJECT, "EXECUTOR_PAGE.INITIAL_EXECUTORS_COUNT");
+            ExecutorWindow_MaxExecutors = Math.Max(ConnectionManager.getInstance().GuiSession.ExecutorPages.Max(x => x.GUIExecutors.Count), executorInitCount);
+
+            var idListLength = executorIds.Count;
+            if (idListLength != ExecutorWindow_MaxExecutors)
+            {
+                if (idListLength < ExecutorWindow_MaxExecutors)
+                {
+                    for (int i = idListLength; i < ExecutorWindow_MaxExecutors; i++)
+                    {
+                        executorIds.Add("dynExecutorID_" + i);
+                    }
+                }
+                else
+                {
+                    for (int i = idListLength; i > ExecutorWindow_MaxExecutors; i--)
+                    {
+                        executorIds.Remove("dynExecutorID_" + i);
+                    }
+                }
+
+                if (dynExecutors != null && dynExecutors.Length != 0)
+                {
+                    foreach (var item in dynExecutors)
+                    {
+                        item.Clear();
+                    }
+                }
+
+                dynExecutors = executorIds.Select(j => new DynamicExecutor { GUID = j, Tolerance = 0.07, IsModifierKeyPressed = () => { return modifierKey; } }).ToArray();
+            }
+        }
+
         private void Clear()
         {
             foreach (var item in dynExecutors)
@@ -348,8 +430,6 @@ namespace MidiPlugin.Utilities
             var settings = SettingsManager.getInstance();
             settings.GUISettingChanged -= HandleSettingChanged;
         }
-
-
 
         #region IInputListener Member
 
@@ -490,7 +570,6 @@ namespace MidiPlugin.Utilities
         }
 
         internal void RegisterSettings()
-
         {
             var settings = SettingsManager.getInstance();
             for (int i = 0; i < dynExecutors.Length; i++)
@@ -501,15 +580,19 @@ namespace MidiPlugin.Utilities
                     Max = 1
                 }, dynExecutors[i].Tolerance);
             }
-            
+
         }
 
         public void HandleSettingChanged(object sender, SettingChangedEventArgs args)
         {
             MidiPlugin.log.Info("SettingChanged: {0}, NewValue: {1}, Type:{2}", args.PropertyName, args.NewValue, args.Type);
-            for (int i = 0; i < dynExecutors.Length; i++)
+            if (dynExecutors != null)
             {
-                dynExecutors[i].Tolerance = SettingsManager.getInstance().getGuiSetting<double>("MPL.EXECFG" + i);
+                for (int i = 0; i < dynExecutors.Length; i++)
+                {
+                    dynExecutors[i].Tolerance = SettingsManager.getInstance().getGuiSetting<double>("MPL.EXECFG" + i);
+                }
+
             }
         }
 
